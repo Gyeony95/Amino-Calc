@@ -6,10 +6,12 @@ class NormalTextField extends StatefulWidget {
   final TextEditingController textController;
   final String? hintText;
   final String? labelText;
+  final bool digitOnly;
   const NormalTextField({
     required this.textController,
     this.hintText,
     this.labelText,
+    this.digitOnly = false,
   });
 
   @override
@@ -26,7 +28,7 @@ class _NormalTextFieldState extends State<NormalTextField> {
 
     return TextFormField(
       controller: widget.textController,
-      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+      inputFormatters: widget.digitOnly ? [FilteringTextInputFormatter.digitsOnly] : [],
       decoration: InputDecoration(
         labelText: widget.labelText,
         hintText: widget.hintText,

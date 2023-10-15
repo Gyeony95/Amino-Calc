@@ -1,5 +1,6 @@
 import 'dart:isolate';
 
+import 'package:amino_calc/alert_toast.dart';
 import 'package:amino_calc/amino_calc_helper.dart';
 import 'package:amino_calc/amino_model.dart';
 import 'package:amino_calc/loading_overlay.dart';
@@ -16,6 +17,7 @@ class AminoCalcScreen extends StatefulWidget {
 class _AminoCalcScreenState extends State<AminoCalcScreen> {
   TextEditingController targetWeight = TextEditingController();
   TextEditingController targetSize = TextEditingController();
+  TextEditingController initAmino = TextEditingController();
 
   double get _targetWeight => textToDouble(targetWeight.text);
 
@@ -26,8 +28,8 @@ class _AminoCalcScreenState extends State<AminoCalcScreen> {
   final _receivePort = ReceivePort();
   bool isLoading = false;
 
-  static double totalWeight = 2000000.0;
-  static int totalSize = 5;
+  static double? totalWeight;
+  static int? totalSize;
 
   @override
   void initState() {
@@ -41,7 +43,7 @@ class _AminoCalcScreenState extends State<AminoCalcScreen> {
     });
 
     targetWeight.addListener(() {
-      totalWeight = _targetWeight * 1000;
+      totalWeight = _targetWeight * 100;
     });
     targetSize.addListener(() {
       totalSize = _targetSize;
@@ -73,22 +75,36 @@ class _AminoCalcScreenState extends State<AminoCalcScreen> {
       ),
       child: Column(
         children: [
-          const Text('아미노산 무게 계산기'),
+          const Text(
+            'Mass finder',
+            style: TextStyle(
+              fontSize: 20,
+              color: Colors.black,
+            ),
+          ),
           const SizedBox(height: 10),
           NormalTextField(
             textController: targetWeight,
-            labelText: '총 단백질 무게',
-            hintText: '총 단백질 무게를 입력하세요',
+            labelText: '총 단백질 무게 (필수)',
+            digitOnly: true,
+            hintText: '총 단백질 무게를 입력하세요(숫자만 입력)',
           ),
           const SizedBox(height: 10),
           NormalTextField(
             textController: targetSize,
-            labelText: '출력할 조합의 수',
-            hintText: '출력하고자 하는 조합의 수 입력',
+            labelText: '출력할 조합의 수 (필수)',
+            digitOnly: true,
+            hintText: '출력하고자 하는 조합의 수 입력(숫자만 입력)',
+          ),
+          const SizedBox(height: 10),
+          NormalTextField(
+            textController: initAmino,
+            labelText: '필수 아미노산 시퀀스 (선택)',
+            hintText: '출력하고자 하는 조합의 수 입력(알파벳만 입력)',
           ),
           const SizedBox(height: 10),
           ElevatedButton(
-            onPressed: onTapCalc,
+            onPressed: () => onTapCalc(context),
             child: Container(
               width: double.infinity,
               height: 50,
@@ -129,6 +145,7 @@ class _AminoCalcScreenState extends State<AminoCalcScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text('아미노산 조합 : ${item.code}'),
+          Text('물 증발량 : ${item.waterWeight}'),
           Text('총 무게 : ${item.weight}'),
         ],
       ),
@@ -156,14 +173,19 @@ class _AminoCalcScreenState extends State<AminoCalcScreen> {
   }
 
   /// 계산하기 클릭 이벤트
-  Future<void> onTapCalc() async {
+  Future<void> onTapCalc(BuildContext context) async {
+    if (totalWeight == null || totalSize == null) {
+      AlertToast.show(context: context, msg: '필수값을 입력해주세요.');
+      return;
+    }
     resultList.clear();
     isLoading = true;
     setState(() {});
-    double w = totalWeight;
-    int s = totalSize;
+    double w = totalWeight ?? 0.0;
+    int s = totalSize ?? 0;
+    String a = initAmino.text;
     Isolate.spawn<SendPort>(
-      (sp) => AminoCalcHelper.calc(sp, w, s),
+      (sp) => AminoCalcHelper.calc(sp, w, s, a),
       _receivePort.sendPort,
     );
   }
