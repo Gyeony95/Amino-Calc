@@ -145,8 +145,9 @@ class _AminoCalcScreenState extends State<AminoCalcScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text('아미노산 조합 : ${item.code}'),
+          Text('물 증발 전 무게 : ${item.totalWeight}'),
           Text('물 증발량 : ${item.waterWeight}'),
-          Text('총 무게 : ${item.weight}'),
+          Text('분자량 : ${item.weight}'),
         ],
       ),
     );
