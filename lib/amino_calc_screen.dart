@@ -57,7 +57,7 @@ class _AminoCalcScreenState extends State<AminoCalcScreen> {
           child: LoadingOverlay(
             color: Colors.black12,
             isLoading: isLoading,
-            child: Center(child: _buildBody()),
+            child: SelectionArea(child: Center(child: _buildBody())),
           ),
         ),
       ),
