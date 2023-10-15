@@ -2,11 +2,8 @@ import 'dart:isolate';
 
 import 'package:amino_calc/amino_model.dart';
 
-double totalWeight = 2000 * 1000;
-int totalSize = 12;
-
 class AminoCalcHelper {
-  static calc(SendPort sendPort){
+  static calc(SendPort sendPort, double totalWeight, int totalSize){
     final aminoMap = {
       'G': 57021,
       'A': 71037,
@@ -29,13 +26,13 @@ class AminoCalcHelper {
       'Y': 163063,
       'W': 186079
     };
-    List<AminoModel> aminoList = findClosestWeightCombinations(aminoMap);
+    List<AminoModel> aminoList = findClosestWeightCombinations(aminoMap, totalWeight, totalSize);
     List<Map<String, dynamic>> sendData = aminoList.map((e) => e.toJson()).toList();
     sendPort.send(sendData);
   }
 
 
-  static List<AminoModel> findClosestWeightCombinations(Map<String, int> aminoMap) {
+  static List<AminoModel> findClosestWeightCombinations(Map<String, int> aminoMap, double totalWeight, int totalSize) {
     List<double> dp = List.filled(totalWeight.toInt() + 1, double.infinity);
     List<List<String>> combinations = List.filled(totalWeight.toInt() + 1, []);
     List<AminoModel> resultList = [];

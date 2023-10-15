@@ -18,14 +18,16 @@ class _AminoCalcScreenState extends State<AminoCalcScreen> {
   TextEditingController targetSize = TextEditingController();
 
   double get _targetWeight => textToDouble(targetWeight.text);
+
   int get _targetSize => textToInt(targetSize.text);
 
   List<AminoModel> resultList = [];
 
-  late Isolate _isolate;
   final _receivePort = ReceivePort();
-
   bool isLoading = false;
+
+  static double totalWeight = 2000000.0;
+  static int totalSize = 5;
 
   @override
   void initState() {
@@ -157,19 +159,12 @@ class _AminoCalcScreenState extends State<AminoCalcScreen> {
   Future<void> onTapCalc() async {
     resultList.clear();
     isLoading = true;
-     setState(() {});
-    _isolate = await Isolate.spawn<SendPort>(
-      (sp) => AminoCalcHelper.calc(
-        sp,
-        // _targetWeight,
-        // _targetSize,
-      ),
+    setState(() {});
+    double w = totalWeight;
+    int s = totalSize;
+    Isolate.spawn<SendPort>(
+      (sp) => AminoCalcHelper.calc(sp, w, s),
       _receivePort.sendPort,
     );
-    // AminoCalcHelper.calc(
-    //   _targetWeight * 1000,
-    //   _targetSize
-    // );
   }
 }
-
