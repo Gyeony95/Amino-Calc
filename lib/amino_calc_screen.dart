@@ -86,7 +86,7 @@ class _AminoCalcScreenState extends State<AminoCalcScreen> {
           NormalTextField(
             textController: targetWeight,
             labelText: '총 단백질 무게 (필수)',
-            digitOnly: true,
+            digitOnly: false,
             hintText: '총 단백질 무게를 입력하세요(숫자만 입력)',
           ),
           const SizedBox(height: 10),

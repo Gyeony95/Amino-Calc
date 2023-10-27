@@ -117,8 +117,24 @@ class AminoCalcHelper {
         mustIndex = i;
       }
     }
-    print('${resultList[mustIndex].weight}, $mustIndex');
-    return resultList.sublist(mustIndex - totalSize, mustIndex + totalSize);
+
+    // 입력값에 가까운 순서대로 정렬
+    resultList.sort((a, b) {
+      if (a.weight == null && b.weight == null) {
+        return 0;
+      } else if (a.weight == null) {
+        return 1;
+      } else if (b.weight == null) {
+        return -1;
+      } else {
+        final double diffA = (a.weight! - compareValue).abs();
+        final double diffB = (b.weight! - compareValue).abs();
+        return diffA.compareTo(diffB);
+      }
+    });
+
+
+    return resultList.sublist(0, totalSize);
   }
 
   static String getAminoByWeight(Map<String, int> aminoMap, int weight) {
