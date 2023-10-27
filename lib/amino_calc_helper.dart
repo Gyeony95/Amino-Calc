@@ -2,6 +2,9 @@ import 'dart:isolate';
 
 import 'package:amino_calc/amino_model.dart';
 
+// 총무게까지만 계산하면 물 증발량 계산이 안돼서 여유있게 넣어놓는 가중치
+double addWeight = 100000.0;
+
 class AminoCalcHelper {
   /// [totalWeight] : 단백질의 총 무게
   /// [totalSize] : 출력할 아미노산 조합의 숫자
@@ -39,7 +42,7 @@ class AminoCalcHelper {
       }).toList();
     }
     List<AminoModel> aminoList = findClosestWeightCombinations(
-        aminoMap, totalWeight, totalSize, initAminos);
+        aminoMap, totalWeight + addWeight, totalSize, initAminos);
     List<Map<String, dynamic>> sendData =
         aminoList.map((e) => e.toJson()).toList();
     sendPort.send(sendData);
@@ -72,25 +75,21 @@ class AminoCalcHelper {
     if (dp[totalWeight.toInt()] == double.infinity) {
       print("불가능한 조합입니다.");
     } else {
-      // 입력받은 갯수만큼 자름
-      var resultCombinations = combinations.sublist(
-          combinations.length - totalSize, combinations.length);
-
-      for (var i = 0; i < resultCombinations.length; i++) {
+      for (var i = 0; i < combinations.length; i++) {
         // 각 조합의 맨 앞에 필수값 추가
-        resultCombinations[i] = [
+        combinations[i] = [
           ...initAminos.split(''),
-          ...resultCombinations[i]
+          ...combinations[i]
         ];
         // 각 아미노산 총 무게
-        final sum = resultCombinations[i]
+        final sum = combinations[i]
                 .map((amino) => aminoMap[amino] ?? 0)
                 .fold(0.0, (sum, e) => sum + e) /
             100;
         // 물 증발량
-        final waterWeight = 18.01 * (resultCombinations[i].length - 1);
-        var aminoString = groupAndCount(resultCombinations[i].join(''));
-        print('$aminoString, $waterWeight, $sum');
+        final waterWeight = 18.01 * (combinations[i].length - 1);
+        var aminoString = groupAndCount(combinations[i].join(''));
+        print('$aminoString, $waterWeight, $sum, ${sum - waterWeight}');
         resultList.add(AminoModel(
           code: aminoString,
           totalWeight: sum,
@@ -99,7 +98,27 @@ class AminoCalcHelper {
         ));
       }
     }
-    return resultList;
+
+    // 예외처리 해놨던 아미노산들의 무게
+    double initAminoWeight = 0;
+    if(initAminos.isNotEmpty){
+      for(var i in initAminos.split('')){
+        initAminoWeight += aminoMap[i] ?? 0;
+      }
+    }
+    resultList.sort((a,b) => (a.weight ?? 0).compareTo(b.weight ?? 0));
+    double compareValue = (totalWeight + initAminoWeight - addWeight)/100;
+    // 가장 목표값에 가까운 index 도출
+    int mustIndex = 0;
+    for(var i = 0; i < resultList.length; i++){
+      double currentValue = ((resultList[mustIndex].weight ?? 0) - compareValue).abs();
+      double newValue = ((resultList[i].weight ?? 0) - compareValue).abs();
+      if(currentValue > newValue){
+        mustIndex = i;
+      }
+    }
+    print('${resultList[mustIndex].weight}, $mustIndex');
+    return resultList.sublist(mustIndex - totalSize, mustIndex + totalSize);
   }
 
   static String getAminoByWeight(Map<String, int> aminoMap, int weight) {
