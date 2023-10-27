@@ -9,8 +9,8 @@ class AminoCalcHelper {
   static calc(
       SendPort sendPort, double totalWeight, int totalSize, String initAminos) {
     final aminoMap = {
-      'G': 75030,
-      'A': 89050,
+      'G': 7503,
+      'A': 8905,
       'S': 10504,
       'T': 11906,
       'C': 12102,
@@ -50,12 +50,16 @@ class AminoCalcHelper {
       double totalWeight,
       int totalSize,
       String initAminos) {
+    // 총 무게만큼의 리스트 생성
     List<double> dp = List.filled(totalWeight.toInt() + 1, double.infinity);
+    // 총 무게 만큼의 빈 리스트 생성
     List<List<String>> combinations = List.filled(totalWeight.toInt() + 1, []);
     List<AminoModel> resultList = [];
     dp[0] = 0;
 
+    // 사용되는 아미노맵의 숫자만큼 반복
     for (var weight in aminoMap.values) {
+      // 각 아미노산의 무게부터 총 무게가 될때까지 반복
       for (var i = weight.toInt(); i <= totalWeight; i++) {
         if (dp[i] > dp[i - weight.toInt()] + 1) {
           dp[i] = dp[i - weight.toInt()] + 1;
@@ -68,9 +72,12 @@ class AminoCalcHelper {
     if (dp[totalWeight.toInt()] == double.infinity) {
       print("불가능한 조합입니다.");
     } else {
+      // 입력받은 갯수만큼 자름
       var resultCombinations = combinations.sublist(
           combinations.length - totalSize, combinations.length);
+
       for (var i = 0; i < resultCombinations.length; i++) {
+        // 각 조합의 맨 앞에 필수값 추가
         resultCombinations[i] = [
           ...initAminos.split(''),
           ...resultCombinations[i]
@@ -125,5 +132,9 @@ class AminoCalcHelper {
     result += "${input[input.length - 1]}$count";
 
     return result;
+  }
+
+  static double getWaterWeight(int aminoLength){
+    return 18.01 * (aminoLength -1);
   }
 }
