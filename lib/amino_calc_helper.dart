@@ -88,7 +88,8 @@ class AminoCalcHelper {
             100;
         // 물 증발량
         final waterWeight = 18.01 * (combinations[i].length - 1);
-        var aminoString = groupAndCount(combinations[i].join(''));
+        // var aminoString = groupAndCount(combinations[i].join(''));
+        var aminoString = combinations[i].join('');
         print('$aminoString, $waterWeight, $sum, ${sum - waterWeight}');
         resultList.add(AminoModel(
           code: aminoString,
