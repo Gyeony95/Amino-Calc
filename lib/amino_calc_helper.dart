@@ -83,8 +83,8 @@ class AminoCalcHelper {
         ];
         // 각 아미노산 총 무게
         final sum = combinations[i]
-                .map((amino) => aminoMap[amino] ?? 0)
-                .fold(0.0, (sum, e) => sum + e) /
+            .map((amino) => aminoMap[amino] ?? 0)
+            .fold(0.0, (sum, e) => sum + e) /
             100;
         // 물 증발량
         final waterWeight = 18.01 * (combinations[i].length - 1);
@@ -102,19 +102,20 @@ class AminoCalcHelper {
 
     // 예외처리 해놨던 아미노산들의 무게
     double initAminoWeight = 0;
-    if(initAminos.isNotEmpty){
-      for(var i in initAminos.split('')){
+    if (initAminos.isNotEmpty) {
+      for (var i in initAminos.split('')) {
         initAminoWeight += aminoMap[i] ?? 0;
       }
     }
-    resultList.sort((a,b) => (a.weight ?? 0).compareTo(b.weight ?? 0));
-    double compareValue = (totalWeight + initAminoWeight - addWeight)/100;
+    resultList.sort((a, b) => (a.weight ?? 0).compareTo(b.weight ?? 0));
+    double compareValue = (totalWeight + initAminoWeight - addWeight) / 100;
     // 가장 목표값에 가까운 index 도출
     int mustIndex = 0;
-    for(var i = 0; i < resultList.length; i++){
-      double currentValue = ((resultList[mustIndex].weight ?? 0) - compareValue).abs();
+    for (var i = 0; i < resultList.length; i++) {
+      double currentValue = ((resultList[mustIndex].weight ?? 0) - compareValue)
+          .abs();
       double newValue = ((resultList[i].weight ?? 0) - compareValue).abs();
-      if(currentValue > newValue){
+      if (currentValue > newValue) {
         mustIndex = i;
       }
     }
@@ -134,8 +135,8 @@ class AminoCalcHelper {
       }
     });
 
-
-    return resultList.sublist(0, totalSize);
+    int _totalSize = resultList.length > totalSize ? totalSize : resultList.length;
+    return resultList.sublist(0, _totalSize);
   }
 
   static String getAminoByWeight(Map<String, int> aminoMap, int weight) {
@@ -170,7 +171,7 @@ class AminoCalcHelper {
     return result;
   }
 
-  static double getWaterWeight(int aminoLength){
-    return 18.01 * (aminoLength -1);
+  static double getWaterWeight(int aminoLength) {
+    return 18.01 * (aminoLength - 1);
   }
 }

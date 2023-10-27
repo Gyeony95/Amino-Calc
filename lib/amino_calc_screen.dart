@@ -185,9 +185,15 @@ class _AminoCalcScreenState extends State<AminoCalcScreen> {
     double w = totalWeight ?? 0.0;
     int s = totalSize ?? 0;
     String a = initAmino.text;
-    Isolate.spawn<SendPort>(
-      (sp) => AminoCalcHelper.calc(sp, w, s, a),
-      _receivePort.sendPort,
-    );
+
+    try{
+      Isolate.spawn<SendPort>(
+            (sp) => AminoCalcHelper.calc(sp, w, s, a),
+        _receivePort.sendPort,
+      );
+    }catch(e){
+      AlertToast.show(context: context, msg: '에러낫슈');
+    }
+
   }
 }
