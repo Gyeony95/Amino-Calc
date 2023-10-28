@@ -1,6 +1,6 @@
 {
-    "name": "amino_calc",
-    "short_name": "amino_calc",
+    "name": "mass_finder",
+    "short_name": "mass_finder",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

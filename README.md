@@ -1,4 +1,4 @@
-# amino_calc
+# mass_finder
 
 A new Flutter project.
 

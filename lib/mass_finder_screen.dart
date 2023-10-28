@@ -1,20 +1,20 @@
 import 'dart:isolate';
 
-import 'package:amino_calc/alert_toast.dart';
-import 'package:amino_calc/amino_calc_helper.dart';
-import 'package:amino_calc/amino_model.dart';
-import 'package:amino_calc/loading_overlay.dart';
-import 'package:amino_calc/normal_text_field.dart';
+import 'package:mass_finder/alert_toast.dart';
+import 'package:mass_finder/mass_finder_helper.dart';
+import 'package:mass_finder/amino_model.dart';
+import 'package:mass_finder/loading_overlay.dart';
+import 'package:mass_finder/normal_text_field.dart';
 import 'package:flutter/material.dart';
 
-class AminoCalcScreen extends StatefulWidget {
-  const AminoCalcScreen({Key? key}) : super(key: key);
+class MassFinderScreen extends StatefulWidget {
+  const MassFinderScreen({Key? key}) : super(key: key);
 
   @override
-  State<AminoCalcScreen> createState() => _AminoCalcScreenState();
+  State<MassFinderScreen> createState() => _MassFinderScreenState();
 }
 
-class _AminoCalcScreenState extends State<AminoCalcScreen> {
+class _MassFinderScreenState extends State<MassFinderScreen> {
   TextEditingController targetWeight = TextEditingController();
   TextEditingController targetSize = TextEditingController();
   TextEditingController initAmino = TextEditingController();
@@ -188,7 +188,7 @@ class _AminoCalcScreenState extends State<AminoCalcScreen> {
 
     try{
       Isolate.spawn<SendPort>(
-            (sp) => AminoCalcHelper.calc(sp, w, s, a),
+            (sp) => MassFinderHelper.calc(sp, w, s, a),
         _receivePort.sendPort,
       );
     }catch(e){

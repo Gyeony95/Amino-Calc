@@ -1,11 +1,11 @@
 import 'dart:isolate';
 
-import 'package:amino_calc/amino_model.dart';
+import 'package:mass_finder/amino_model.dart';
 
 // 총무게까지만 계산하면 물 증발량 계산이 안돼서 여유있게 넣어놓는 가중치
 double addWeight = 100000.0;
 
-class AminoCalcHelper {
+class MassFinderHelper {
   /// [totalWeight] : 단백질의 총 무게
   /// [totalSize] : 출력할 아미노산 조합의 숫자
   /// [initAminos] : 필수로 포함되어야하는 아미노산들

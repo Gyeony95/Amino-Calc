@@ -1,4 +1,4 @@
-import 'package:amino_calc/amino_calc_screen.dart';
+import 'package:mass_finder/mass_finder_screen.dart';
 import 'package:flutter/material.dart';
 
 void main() async {
@@ -16,7 +16,7 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       initialRoute: '/',
       routes: {
-        ScreenEnum.aminoCalc.route: (_) => const AminoCalcScreen(),
+        ScreenEnum.aminoCalc.route: (_) => const MassFinderScreen(),
       },
     );
   }
