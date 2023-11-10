@@ -1,6 +1,6 @@
 import 'dart:isolate';
 
-import 'package:mass_finder/alert_toast.dart';
+import 'package:mass_finder/util/alert_toast.dart';
 import 'package:mass_finder/mass_finder_helper.dart';
 import 'package:mass_finder/amino_model.dart';
 import 'package:mass_finder/loading_overlay.dart';
@@ -21,15 +21,12 @@ class _MassFinderScreenState extends State<MassFinderScreen> {
 
   double get _targetWeight => textToDouble(targetWeight.text);
 
-  int get _targetSize => textToInt(targetSize.text);
-
   List<AminoModel> resultList = [];
 
   final _receivePort = ReceivePort();
   bool isLoading = false;
 
   static double? totalWeight;
-  static int? totalSize;
 
   @override
   void initState() {
@@ -44,9 +41,6 @@ class _MassFinderScreenState extends State<MassFinderScreen> {
 
     targetWeight.addListener(() {
       totalWeight = _targetWeight * 100;
-    });
-    targetSize.addListener(() {
-      totalSize = _targetSize;
     });
   }
 
@@ -85,22 +79,15 @@ class _MassFinderScreenState extends State<MassFinderScreen> {
           const SizedBox(height: 10),
           NormalTextField(
             textController: targetWeight,
-            labelText: '총 단백질 무게 (필수)',
+            labelText: 'Exact Mass', // 총 단백질의 무게
             digitOnly: false,
-            hintText: '총 단백질 무게를 입력하세요(숫자만 입력)',
-          ),
-          const SizedBox(height: 10),
-          NormalTextField(
-            textController: targetSize,
-            labelText: '출력할 조합의 수 (필수)',
-            digitOnly: true,
-            hintText: '출력하고자 하는 조합의 수 입력(숫자만 입력)',
+            hintText: 'please enter exact mass(only digit)', // 숫자만 입력
           ),
           const SizedBox(height: 10),
           NormalTextField(
             textController: initAmino,
-            labelText: '필수 아미노산 시퀀스 (선택)',
-            hintText: '출력하고자 하는 조합의 수 입력(알파벳만 입력)',
+            labelText: 'Essential Sequence (Option)',
+            hintText: 'please enter essential sequence (olny alphabet)',
           ),
           const SizedBox(height: 10),
           ElevatedButton(
@@ -109,7 +96,7 @@ class _MassFinderScreenState extends State<MassFinderScreen> {
               width: double.infinity,
               height: 50,
               alignment: Alignment.center,
-              child: const Text('계산하기'),
+              child: const Text('Calcualtion!'),
             ),
           ),
           const SizedBox(height: 10),
@@ -144,10 +131,10 @@ class _MassFinderScreenState extends State<MassFinderScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('아미노산 조합 : ${item.code}'),
+          Text('Sequence : ${item.code}'),
           // Text('물 증발 전 무게 : ${item.totalWeight}'),
           // Text('물 증발량 : ${item.waterWeight}'),
-          Text('분자량 : ${item.weight}'),
+          Text('Extra Mass : ${item.weight}'),
         ],
       ),
     );
@@ -175,7 +162,7 @@ class _MassFinderScreenState extends State<MassFinderScreen> {
 
   /// 계산하기 클릭 이벤트
   Future<void> onTapCalc(BuildContext context) async {
-    if (totalWeight == null || totalSize == null) {
+    if (totalWeight == null) {
       AlertToast.show(context: context, msg: '필수값을 입력해주세요.');
       return;
     }
@@ -183,12 +170,11 @@ class _MassFinderScreenState extends State<MassFinderScreen> {
     isLoading = true;
     setState(() {});
     double w = totalWeight ?? 0.0;
-    int s = totalSize ?? 0;
     String a = initAmino.text;
 
     try{
       Isolate.spawn<SendPort>(
-            (sp) => MassFinderHelper.calc(sp, w, s, a),
+            (sp) => MassFinderHelper.calc(sp, w, 20, a),
         _receivePort.sendPort,
       );
     }catch(e){
