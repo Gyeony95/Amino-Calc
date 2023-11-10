@@ -71,49 +71,47 @@ class _MassFinderScreenState extends State<MassFinderScreen> {
         minWidth: 300,
       ),
       child: SingleChildScrollView(
-        child: Expanded(
-          child: Column(
-            children: [
-              const Text(
-                'Mass finder',
-                style: TextStyle(fontSize: 20, color: Colors.black),
+        child: Column(
+          children: [
+            const Text(
+              'Mass finder',
+              style: TextStyle(fontSize: 20, color: Colors.black),
+            ),
+            const SizedBox(height: 10),
+            NormalTextField(
+              textController: targetWeight,
+              labelText: 'Exact Mass', // 총 단백질의 무게
+              digitOnly: false,
+              hintText: 'please enter exact mass(only digit)', // 숫자만 입력
+            ),
+            const SizedBox(height: 10),
+            NormalTextField(
+              textController: initAmino,
+              labelText: 'Essential Sequence (Option)',
+              hintText: 'please enter essential sequence (olny alphabet)',
+            ),
+            const SizedBox(height: 10),
+            FormylationSelector(
+              fomyType: currentFormyType,
+              onChange: (newType) {
+                setState(() {
+                  currentFormyType = newType;
+                });
+              },
+            ),
+            const SizedBox(height: 10),
+            ElevatedButton(
+              onPressed: () => onTapCalc(context),
+              child: Container(
+                width: double.infinity,
+                height: 50,
+                alignment: Alignment.center,
+                child: const Text('Calcualtion!'),
               ),
-              const SizedBox(height: 10),
-              NormalTextField(
-                textController: targetWeight,
-                labelText: 'Exact Mass', // 총 단백질의 무게
-                digitOnly: false,
-                hintText: 'please enter exact mass(only digit)', // 숫자만 입력
-              ),
-              const SizedBox(height: 10),
-              NormalTextField(
-                textController: initAmino,
-                labelText: 'Essential Sequence (Option)',
-                hintText: 'please enter essential sequence (olny alphabet)',
-              ),
-              const SizedBox(height: 10),
-              FormylationSelector(
-                fomyType: currentFormyType,
-                onChange: (newType) {
-                  setState(() {
-                    currentFormyType = newType;
-                  });
-                },
-              ),
-              const SizedBox(height: 10),
-              ElevatedButton(
-                onPressed: () => onTapCalc(context),
-                child: Container(
-                  width: double.infinity,
-                  height: 50,
-                  alignment: Alignment.center,
-                  child: const Text('Calcualtion!'),
-                ),
-              ),
-              const SizedBox(height: 10),
-              _aminoList(),
-            ],
-          ),
+            ),
+            const SizedBox(height: 10),
+            _aminoList(),
+          ],
         ),
       ),
     );
