@@ -1,6 +1,6 @@
 import 'dart:isolate';
 
-import 'package:mass_finder/amino_model.dart';
+import 'package:mass_finder/model/amino_model.dart';
 
 // 총무게까지만 계산하면 물 증발량 계산이 안돼서 여유있게 넣어놓는 가중치
 double addWeight = 100000.0;
@@ -77,20 +77,16 @@ class MassFinderHelper {
     } else {
       for (var i = 0; i < combinations.length; i++) {
         // 각 조합의 맨 앞에 필수값 추가
-        combinations[i] = [
-          ...initAminos.split(''),
-          ...combinations[i]
-        ];
+        combinations[i] = [...initAminos.split(''), ...combinations[i]];
         // 각 아미노산 총 무게
         final sum = combinations[i]
-            .map((amino) => aminoMap[amino] ?? 0)
-            .fold(0.0, (sum, e) => sum + e) /
+                .map((amino) => aminoMap[amino] ?? 0)
+                .fold(0.0, (sum, e) => sum + e) /
             100;
         // 물 증발량
-        final waterWeight = 18.01 * (combinations[i].length - 1);
-        // var aminoString = groupAndCount(combinations[i].join(''));
+        final waterWeight = getWaterWeight(combinations[i].length);
         var aminoString = combinations[i].join('');
-        print('$aminoString, $waterWeight, $sum, ${sum - waterWeight}');
+        // print('$aminoString, $waterWeight, $sum, ${sum - waterWeight}');
         resultList.add(AminoModel(
           code: aminoString,
           totalWeight: sum,
@@ -99,21 +95,16 @@ class MassFinderHelper {
         ));
       }
     }
-
     // 예외처리 해놨던 아미노산들의 무게
-    double initAminoWeight = 0;
-    if (initAminos.isNotEmpty) {
-      for (var i in initAminos.split('')) {
-        initAminoWeight += aminoMap[i] ?? 0;
-      }
-    }
+    double initAminoWeight = getInitAminoWeight(initAminos, aminoMap);
+    // 크기순으로 정렬
     resultList.sort((a, b) => (a.weight ?? 0).compareTo(b.weight ?? 0));
     double compareValue = (totalWeight + initAminoWeight - addWeight) / 100;
     // 가장 목표값에 가까운 index 도출
     int mustIndex = 0;
     for (var i = 0; i < resultList.length; i++) {
-      double currentValue = ((resultList[mustIndex].weight ?? 0) - compareValue)
-          .abs();
+      double currentValue =
+          ((resultList[mustIndex].weight ?? 0) - compareValue).abs();
       double newValue = ((resultList[i].weight ?? 0) - compareValue).abs();
       if (currentValue > newValue) {
         mustIndex = i;
@@ -135,43 +126,55 @@ class MassFinderHelper {
       }
     });
 
-    int _totalSize = resultList.length > totalSize ? totalSize : resultList.length;
+    int _totalSize =
+        resultList.length > totalSize ? totalSize : resultList.length;
     return resultList.sublist(0, _totalSize);
   }
 
+  /// 무게에 맞는 아미노산 도출
   static String getAminoByWeight(Map<String, int> aminoMap, int weight) {
     for (var entry in aminoMap.entries) {
       if (entry.value == weight) {
         return entry.key;
       }
     }
-    return "";
+    return '';
   }
 
-  static String groupAndCount(String input) {
-    if (input.isEmpty) {
-      return ""; // 빈 문자열에 대한 처리
-    }
+  // 같은 알파벳들 묶어주는 함수
+  // static String groupAndCount(String input) {
+  //   if (input.isEmpty) return ''; // 빈 문자열에 대한 처리
+  //
+  //   String result = '';
+  //   int count = 1;
+  //
+  //   for (int i = 1; i < input.length; i++) {
+  //     if (input[i] == input[i - 1]) {
+  //       count++;
+  //     } else {
+  //       result += "${input[i - 1]}$count";
+  //       count = 1;
+  //     }
+  //   }
+  //
+  //   // 마지막 알파벳과 그 횟수를 추가
+  //   result += "${input[input.length - 1]}$count";
+  //
+  //   return result;
+  // }
 
-    String result = "";
-    int count = 1;
-
-    for (int i = 1; i < input.length; i++) {
-      if (input[i] == input[i - 1]) {
-        count++;
-      } else {
-        result += "${input[i - 1]}$count";
-        count = 1;
-      }
-    }
-
-    // 마지막 알파벳과 그 횟수를 추가
-    result += "${input[input.length - 1]}$count";
-
-    return result;
-  }
-
+  // 수분량 = (아미노산 갯수 - 1) * 18.01
   static double getWaterWeight(int aminoLength) {
     return 18.01 * (aminoLength - 1);
+  }
+
+  static double getInitAminoWeight(String initAminos, Map<String, int> aminoMap){
+    double initAminoWeight = 0;
+    if (initAminos.isNotEmpty) {
+      for (var i in initAminos.split('')) {
+        initAminoWeight += aminoMap[i] ?? 0;
+      }
+    }
+    return initAminoWeight;
   }
 }

@@ -2,9 +2,9 @@ import 'dart:isolate';
 
 import 'package:mass_finder/util/alert_toast.dart';
 import 'package:mass_finder/mass_finder_helper.dart';
-import 'package:mass_finder/amino_model.dart';
-import 'package:mass_finder/loading_overlay.dart';
-import 'package:mass_finder/normal_text_field.dart';
+import 'package:mass_finder/model/amino_model.dart';
+import 'package:mass_finder/widget/loading_overlay.dart';
+import 'package:mass_finder/widget/normal_text_field.dart';
 import 'package:flutter/material.dart';
 
 class MassFinderScreen extends StatefulWidget {
@@ -134,7 +134,7 @@ class _MassFinderScreenState extends State<MassFinderScreen> {
           Text('Sequence : ${item.code}'),
           // Text('물 증발 전 무게 : ${item.totalWeight}'),
           // Text('물 증발량 : ${item.waterWeight}'),
-          Text('Extra Mass : ${item.weight}'),
+          Text('Exact Mass : ${item.weight}'),
         ],
       ),
     );
