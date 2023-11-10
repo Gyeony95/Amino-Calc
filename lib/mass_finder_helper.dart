@@ -1,6 +1,7 @@
 import 'dart:isolate';
 
 import 'package:mass_finder/model/amino_model.dart';
+import 'package:mass_finder/widget/fomylation_selector.dart';
 
 // 총무게까지만 계산하면 물 증발량 계산이 안돼서 여유있게 넣어놓는 가중치
 double addWeight = 100000.0;
@@ -10,7 +11,7 @@ class MassFinderHelper {
   /// [totalSize] : 출력할 아미노산 조합의 숫자
   /// [initAminos] : 필수로 포함되어야하는 아미노산들
   static calc(
-      SendPort sendPort, double totalWeight, int totalSize, String initAminos) {
+      SendPort sendPort, double totalWeight, int totalSize, String initAminos, String fomyType) {
     final aminoMap = {
       'G': 7503,
       'A': 8905,
@@ -33,6 +34,12 @@ class MassFinderHelper {
       'K': 14611,
       'R': 17411,
     };
+
+    FomyType fType = FomyType.decode(fomyType);
+
+
+
+
     // 필수 아미노산이 있다면 총 무게에서 제거처리
     if (initAminos.isNotEmpty) {
       initAminos = initAminos.toUpperCase();

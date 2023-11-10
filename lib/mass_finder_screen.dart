@@ -3,6 +3,7 @@ import 'dart:isolate';
 import 'package:mass_finder/util/alert_toast.dart';
 import 'package:mass_finder/mass_finder_helper.dart';
 import 'package:mass_finder/model/amino_model.dart';
+import 'package:mass_finder/widget/fomylation_selector.dart';
 import 'package:mass_finder/widget/loading_overlay.dart';
 import 'package:mass_finder/widget/normal_text_field.dart';
 import 'package:flutter/material.dart';
@@ -27,6 +28,8 @@ class _MassFinderScreenState extends State<MassFinderScreen> {
   bool isLoading = false;
 
   static double? totalWeight;
+
+  FomyType currentFomyType = FomyType.unknown;
 
   @override
   void initState() {
@@ -67,54 +70,56 @@ class _MassFinderScreenState extends State<MassFinderScreen> {
         maxWidth: 500,
         minWidth: 300,
       ),
-      child: Column(
-        children: [
-          const Text(
-            'Mass finder',
-            style: TextStyle(
-              fontSize: 20,
-              color: Colors.black,
-            ),
-          ),
-          const SizedBox(height: 10),
-          NormalTextField(
-            textController: targetWeight,
-            labelText: 'Exact Mass', // 총 단백질의 무게
-            digitOnly: false,
-            hintText: 'please enter exact mass(only digit)', // 숫자만 입력
-          ),
-          const SizedBox(height: 10),
-          NormalTextField(
-            textController: initAmino,
-            labelText: 'Essential Sequence (Option)',
-            hintText: 'please enter essential sequence (olny alphabet)',
-          ),
-          const SizedBox(height: 10),
-          ElevatedButton(
-            onPressed: () => onTapCalc(context),
-            child: Container(
-              width: double.infinity,
-              height: 50,
-              alignment: Alignment.center,
-              child: const Text('Calcualtion!'),
-            ),
-          ),
-          const SizedBox(height: 10),
-          _resultArea(),
-        ],
-      ),
-    );
-  }
-
-  Widget _resultArea() {
-    return Expanded(
       child: SingleChildScrollView(
-        child: _examplePERList(),
+        child: Expanded(
+          child: Column(
+            children: [
+              const Text(
+                'Mass finder',
+                style: TextStyle(fontSize: 20, color: Colors.black),
+              ),
+              const SizedBox(height: 10),
+              NormalTextField(
+                textController: targetWeight,
+                labelText: 'Exact Mass', // 총 단백질의 무게
+                digitOnly: false,
+                hintText: 'please enter exact mass(only digit)', // 숫자만 입력
+              ),
+              const SizedBox(height: 10),
+              NormalTextField(
+                textController: initAmino,
+                labelText: 'Essential Sequence (Option)',
+                hintText: 'please enter essential sequence (olny alphabet)',
+              ),
+              const SizedBox(height: 10),
+              FomylationSelector(
+                fomyType: currentFomyType,
+                onChange: (newType) {
+                  setState(() {
+                    currentFomyType = newType;
+                  });
+                },
+              ),
+              const SizedBox(height: 10),
+              ElevatedButton(
+                onPressed: () => onTapCalc(context),
+                child: Container(
+                  width: double.infinity,
+                  height: 50,
+                  alignment: Alignment.center,
+                  child: const Text('Calcualtion!'),
+                ),
+              ),
+              const SizedBox(height: 10),
+              _aminoList(),
+            ],
+          ),
+        ),
       ),
     );
   }
 
-  Widget _examplePERList() {
+  Widget _aminoList() {
     return ListView.builder(
       itemCount: resultList.length,
       shrinkWrap: true,
@@ -171,15 +176,14 @@ class _MassFinderScreenState extends State<MassFinderScreen> {
     setState(() {});
     double w = totalWeight ?? 0.0;
     String a = initAmino.text;
-
-    try{
+    String f = currentFomyType.text;
+    try {
       Isolate.spawn<SendPort>(
-            (sp) => MassFinderHelper.calc(sp, w, 20, a),
+        (sp) => MassFinderHelper.calc(sp, w, 20, a, f),
         _receivePort.sendPort,
       );
-    }catch(e){
+    } catch (e) {
       AlertToast.show(context: context, msg: 'error occurred!!');
     }
-
   }
 }
