@@ -163,7 +163,7 @@ class _MassFinderScreenState extends State<MassFinderScreen> {
   /// 계산하기 클릭 이벤트
   Future<void> onTapCalc(BuildContext context) async {
     if (totalWeight == null) {
-      AlertToast.show(context: context, msg: '필수값을 입력해주세요.');
+      AlertToast.show(context: context, msg: 'please enter extra mass!');
       return;
     }
     resultList.clear();
@@ -178,7 +178,7 @@ class _MassFinderScreenState extends State<MassFinderScreen> {
         _receivePort.sendPort,
       );
     }catch(e){
-      AlertToast.show(context: context, msg: '에러낫슈');
+      AlertToast.show(context: context, msg: 'error occurred!!');
     }
 
   }
