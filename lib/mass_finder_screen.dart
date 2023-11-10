@@ -1,9 +1,9 @@
 import 'dart:isolate';
 
 import 'package:mass_finder/util/alert_toast.dart';
-import 'package:mass_finder/mass_finder_helper.dart';
+import 'package:mass_finder/helper/mass_finder_helper.dart';
 import 'package:mass_finder/model/amino_model.dart';
-import 'package:mass_finder/widget/fomylation_selector.dart';
+import 'package:mass_finder/widget/formylation_selector.dart';
 import 'package:mass_finder/widget/loading_overlay.dart';
 import 'package:mass_finder/widget/normal_text_field.dart';
 import 'package:flutter/material.dart';
@@ -29,7 +29,7 @@ class _MassFinderScreenState extends State<MassFinderScreen> {
 
   static double? totalWeight;
 
-  FomyType currentFomyType = FomyType.unknown;
+  FormyType currentFormyType = FormyType.unknown;
 
   @override
   void initState() {
@@ -92,11 +92,11 @@ class _MassFinderScreenState extends State<MassFinderScreen> {
                 hintText: 'please enter essential sequence (olny alphabet)',
               ),
               const SizedBox(height: 10),
-              FomylationSelector(
-                fomyType: currentFomyType,
+              FormylationSelector(
+                fomyType: currentFormyType,
                 onChange: (newType) {
                   setState(() {
-                    currentFomyType = newType;
+                    currentFormyType = newType;
                   });
                 },
               ),
@@ -176,10 +176,10 @@ class _MassFinderScreenState extends State<MassFinderScreen> {
     setState(() {});
     double w = totalWeight ?? 0.0;
     String a = initAmino.text;
-    String f = currentFomyType.text;
+    String f = currentFormyType.text;
     try {
       Isolate.spawn<SendPort>(
-        (sp) => MassFinderHelper.calc(sp, w, 20, a, f),
+        (sp) => MassFinderHelper.calc(sp, w, a, f, aminoMap),
         _receivePort.sendPort,
       );
     } catch (e) {
@@ -187,3 +187,26 @@ class _MassFinderScreenState extends State<MassFinderScreen> {
     }
   }
 }
+
+final aminoMap = {
+  'G': 7503,
+  'A': 8905,
+  'S': 10504,
+  'T': 11906,
+  'C': 12102,
+  'V': 11708,
+  'L': 13109,
+  'I': 13109,
+  'M': 14905,
+  'P': 11506,
+  'F': 16508,
+  'Y': 18107,
+  'W': 20409,
+  'D': 13304,
+  'E': 14705,
+  'N': 13205,
+  'Q': 14607,
+  'H': 15507,
+  'K': 14611,
+  'R': 17411,
+};
