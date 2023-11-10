@@ -41,13 +41,17 @@ class MassFinderHelper {
         totalWeight = totalWeight - (aminoMap[e] ?? 0);
       }).toList();
     }
+    // 실제로 계산이 일어나고 결과값을 도출하는 부분
     List<AminoModel> aminoList = findClosestWeightCombinations(
         aminoMap, totalWeight + addWeight, totalSize, initAminos);
+    // isolate 로 리턴할 수 있는 형태로 바꿔줌
     List<Map<String, dynamic>> sendData =
         aminoList.map((e) => e.toJson()).toList();
     sendPort.send(sendData);
   }
 
+  /// 결과값(분자량)과 아미노산의 종류, 필수로 들어갈 아미노산 들을 입력받고
+  /// 결과값에 가장 가까운 무게를 가지는 조합순으로 리턴해줌
   static List<AminoModel> findClosestWeightCombinations(
       Map<String, int> aminoMap,
       double totalWeight,
@@ -141,33 +145,12 @@ class MassFinderHelper {
     return '';
   }
 
-  // 같은 알파벳들 묶어주는 함수
-  // static String groupAndCount(String input) {
-  //   if (input.isEmpty) return ''; // 빈 문자열에 대한 처리
-  //
-  //   String result = '';
-  //   int count = 1;
-  //
-  //   for (int i = 1; i < input.length; i++) {
-  //     if (input[i] == input[i - 1]) {
-  //       count++;
-  //     } else {
-  //       result += "${input[i - 1]}$count";
-  //       count = 1;
-  //     }
-  //   }
-  //
-  //   // 마지막 알파벳과 그 횟수를 추가
-  //   result += "${input[input.length - 1]}$count";
-  //
-  //   return result;
-  // }
-
-  // 수분량 = (아미노산 갯수 - 1) * 18.01
+  /// 수분량 = (아미노산 갯수 - 1) * 18.01
   static double getWaterWeight(int aminoLength) {
     return 18.01 * (aminoLength - 1);
   }
 
+  /// 필수 아미노산으로 입력받은 무게 계산
   static double getInitAminoWeight(String initAminos, Map<String, int> aminoMap){
     double initAminoWeight = 0;
     if (initAminos.isNotEmpty) {
