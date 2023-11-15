@@ -181,10 +181,7 @@ class _MassFinderScreenState extends State<MassFinderScreen> {
 
   /// 계산하기 클릭 이벤트
   Future<void> onTapCalc(BuildContext context) async {
-    if (totalWeight == null) {
-      AlertToast.show(context: context, msg: 'please enter extra mass!');
-      return;
-    }
+    if(validate(context) == false) return;
     resultList.clear();
     isLoading = true;
     setState(() {});
@@ -200,6 +197,31 @@ class _MassFinderScreenState extends State<MassFinderScreen> {
     } catch (e) {
       AlertToast.show(context: context, msg: 'error occurred!!');
     }
+  }
+
+  // 계산 시작전 각종 조건을 체크하는 부분
+  bool validate(BuildContext context){
+    String? validText = getValidateMsg();
+    if(validText == null) return true;
+    AlertToast.show(msg: validText, context: context);
+    return false;
+  }
+
+  // 실제 각 조건별 메세지를 셋팅하는 부분
+  String? getValidateMsg(){
+    String? msg;
+    // 체크박스에 포함되지 않은값을 초기값으로 넣으려고 할때
+    String initAminoText = initAmino.text;
+    initAminoText.split('').forEach((e) {
+      if(inputAminos[e] == null){
+        msg = '체크박스에 포함되어있지 않은 값이 Essential Sequence에 들어있음';
+      }
+    });
+    // exact mass 값을 안넣었을때
+    if (totalWeight == null) {
+      msg = 'please enter extra mass!';
+    }
+    return msg;
   }
 }
 
