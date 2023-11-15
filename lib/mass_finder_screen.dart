@@ -3,6 +3,7 @@ import 'dart:isolate';
 import 'package:mass_finder/util/alert_toast.dart';
 import 'package:mass_finder/helper/mass_finder_helper.dart';
 import 'package:mass_finder/model/amino_model.dart';
+import 'package:mass_finder/widget/amino_map_selector.dart';
 import 'package:mass_finder/widget/formylation_selector.dart';
 import 'package:mass_finder/widget/loading_overlay.dart';
 import 'package:mass_finder/widget/normal_text_field.dart';
@@ -30,6 +31,9 @@ class _MassFinderScreenState extends State<MassFinderScreen> {
   static double? totalWeight;
 
   FormyType currentFormyType = FormyType.unknown;
+
+  // 계산시에 사용할 아미노산 리스트 , 최초에는 모든 아미노산을 포함한다.
+  Map<String, int> inputAminos = Map.from(aminoMap);
 
   @override
   void initState() {
@@ -91,12 +95,24 @@ class _MassFinderScreenState extends State<MassFinderScreen> {
               hintText: 'please enter essential sequence (olny alphabet)',
             ),
             const SizedBox(height: 10),
+            // f 있는지 여부
             FormylationSelector(
               fomyType: currentFormyType,
               onChange: (newType) {
                 setState(() {
                   currentFormyType = newType;
                 });
+              },
+            ),
+            // 아미노산 종류 선택부분
+            AminoMapSelector(
+              onChangeAminos: (aminos) {
+                var selectedAminos = Map.from(aminos);
+                selectedAminos.removeWhere((k, v) => v == false);
+                inputAminos.clear();
+                for (var e in selectedAminos.keys) {
+                  inputAminos[e] = aminoMap[e] ?? 0;
+                }
               },
             ),
             const SizedBox(height: 10),
@@ -175,9 +191,10 @@ class _MassFinderScreenState extends State<MassFinderScreen> {
     double w = totalWeight ?? 0.0;
     String a = initAmino.text;
     String f = currentFormyType.text;
+    Map<String, int> ia = inputAminos;
     try {
       Isolate.spawn<SendPort>(
-        (sp) => MassFinderHelper.calc(sp, w, a, f, aminoMap),
+        (sp) => MassFinderHelper.calc(sp, w, a, f, ia),
         _receivePort.sendPort,
       );
     } catch (e) {
@@ -186,6 +203,7 @@ class _MassFinderScreenState extends State<MassFinderScreen> {
   }
 }
 
+/// 아미노산들의 리스트
 final aminoMap = {
   'G': 7503,
   'A': 8905,
