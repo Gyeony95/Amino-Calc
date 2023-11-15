@@ -84,7 +84,7 @@ class MassFinderHelper {
         getDonHaveFormyList(aminoMap, totalWeight, initAminos);
     aminoList = [...haveList, ...donHaveList];
     double initAminoWeight = _getInitAminoWeight(initAminos, aminoMap);
-    double compareValue = (totalWeight + initAminoWeight - addWeight) / 100;
+    double compareValue = (totalWeight + initAminoWeight) / 100;
     int _totalSize = aminoList.length > 20 ? 20 : aminoList.length;
     return sortAmino(aminoList, compareValue).sublist(0,_totalSize);
   }
