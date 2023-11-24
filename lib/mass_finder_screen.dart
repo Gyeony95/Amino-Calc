@@ -1,7 +1,7 @@
 import 'dart:isolate';
 
+import 'package:mass_finder/helper/mass_finder_helper_v2.dart';
 import 'package:mass_finder/util/alert_toast.dart';
-import 'package:mass_finder/helper/mass_finder_helper.dart';
 import 'package:mass_finder/model/amino_model.dart';
 import 'package:mass_finder/widget/amino_map_selector.dart';
 import 'package:mass_finder/widget/formylation_selector.dart';
@@ -33,7 +33,7 @@ class _MassFinderScreenState extends State<MassFinderScreen> {
   FormyType currentFormyType = FormyType.unknown;
 
   // 계산시에 사용할 아미노산 리스트 , 최초에는 모든 아미노산을 포함한다.
-  Map<String, int> inputAminos = Map.from(aminoMap);
+  Map<String, double> inputAminos = Map.from(aminoMap);
 
   @override
   void initState() {
@@ -188,10 +188,14 @@ class _MassFinderScreenState extends State<MassFinderScreen> {
     double w = totalWeight ?? 0.0;
     String a = initAmino.text;
     String f = currentFormyType.text;
-    Map<String, int> ia = inputAminos;
+    Map<String, double> ia = inputAminos;
     try {
+      // Isolate.spawn<SendPort>(
+      //   (sp) => MassFinderHelper.calc(sp, w, a, f, ia),
+      //   _receivePort.sendPort,
+      // );
       Isolate.spawn<SendPort>(
-        (sp) => MassFinderHelper.calc(sp, w, a, f, ia),
+            (sp) => MassFinderHelperV2.calc(sp, w, a, f, ia),
         _receivePort.sendPort,
       );
     } catch (e) {
@@ -227,24 +231,24 @@ class _MassFinderScreenState extends State<MassFinderScreen> {
 
 /// 아미노산들의 리스트
 final aminoMap = {
-  'G': 7503,
-  'A': 8905,
-  'S': 10504,
-  'T': 11906,
-  'C': 12102,
-  'V': 11708,
-  'L': 13109,
-  'I': 13109,
-  'M': 14905,
-  'P': 11506,
-  'F': 16508,
-  'Y': 18107,
-  'W': 20409,
-  'D': 13304,
-  'E': 14705,
-  'N': 13205,
-  'Q': 14607,
-  'H': 15507,
-  'K': 14611,
-  'R': 17411,
+  'G': 75.03,
+  'A': 89.05,
+  'S': 105.04,
+  'T': 119.06,
+  'C': 121.02,
+  'V': 117.08,
+  'L': 131.09,
+  'I': 131.09,
+  'M': 149.05,
+  'P': 115.06,
+  'F': 165.08,
+  'Y': 181.07,
+  'W': 204.09,
+  'D': 133.04,
+  'E': 147.05,
+  'N': 132.05,
+  'Q': 146.07,
+  'H': 155.07,
+  'K': 146.11,
+  'R': 174.11,
 };
