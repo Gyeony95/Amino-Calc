@@ -89,12 +89,12 @@ class _MassFinderScreenState extends State<MassFinderScreen> {
               hintText: 'please enter exact mass(only digit)', // 숫자만 입력
             ),
             const SizedBox(height: 10),
-            NormalTextField(
-              textController: initAmino,
-              labelText: 'Essential Sequence (Option)',
-              hintText: 'please enter essential sequence (olny alphabet)',
-            ),
-            const SizedBox(height: 10),
+            // NormalTextField(
+            //   textController: initAmino,
+            //   labelText: 'Essential Sequence (Option)',
+            //   hintText: 'please enter essential sequence (olny alphabet)',
+            // ),
+            // const SizedBox(height: 10),
             // f 있는지 여부
             FormylationSelector(
               fomyType: currentFormyType,
@@ -122,7 +122,7 @@ class _MassFinderScreenState extends State<MassFinderScreen> {
                 width: double.infinity,
                 height: 50,
                 alignment: Alignment.center,
-                child: const Text('Calcualtion!'),
+                child: const Text('Calculation!'),
               ),
             ),
             const SizedBox(height: 10),
