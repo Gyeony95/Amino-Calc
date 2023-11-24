@@ -3,15 +3,15 @@ import 'dart:math';
 
 import 'package:mass_finder/model/amino_model.dart';
 import 'package:mass_finder/widget/formylation_selector.dart';
+import 'package:tuple/tuple.dart';
 
 final random = Random();
 const int topSolutionsCount = 20;
-const int saIterations = 1000; // 시뮬레이티드 어닐링 반복 횟수
+const int saIterations = 100; // 시뮬레이티드 어닐링 반복 횟수
 const double initialTemperature = 10000.0; // 초기 온도
 const double coolingRate = 0.99; // 냉각률
 const double absoluteTemperature = 0.00001; // 최소 온도
 const double fWeight = 27.99; // 포밀레이스의 분자량
-
 // calc 함수에서 초기화 될 사용가능한 아미노산의 리스트
 Map<String, double> dataMap = {};
 
@@ -23,8 +23,16 @@ class MassFinderHelperV2 {
     _formyType = FormyType.decode(fomyType);
     dataMap = Map.from(aminoMap);
     List<AminoModel> bestSolutions = []; // 최적의 해를 저장할 리스트
-    bestSolutions = calcByFType(_formyType, targetMass);
-    bestSolutions = removeDuplicates(bestSolutions); // 중복제거
+
+    Tuple2<int, int> range = getMinMaxRange(_formyType, targetMass);
+
+    // 물의 무게를 빼주기 위해 가능한 범위만큼 가중치를 조절해가며 반복해서 계산
+    for(var i = range.item1; i < range.item2; i ++){
+      var addWeight = getWaterWeight(i);
+      var solutions = calcByFType(_formyType, targetMass + addWeight);
+      solutions = removeDuplicates(solutions); // 중복제거
+      bestSolutions.addAll(solutions);
+    }
 
     // 목표값에 가까운 순서대로 해들을 정렬하고 상위 20개를 선택
     bestSolutions = sortAmino(bestSolutions, targetMass);
@@ -164,7 +172,13 @@ double getWeightSum(String solutionCombine){
   if(solutionCombine.startsWith('f')){
     result += fWeight;
   }
+  // 물 증발량 제거
+  result = result - getWaterWeight(solutionCombine.length);
   return result;
+}
+
+double getWaterWeight(int aminoLength) {
+  return 18.01 * (aminoLength - 1);
 }
 
 // 기준 크기로 정렬
@@ -192,4 +206,21 @@ List<AminoModel> removeDuplicates(List<AminoModel> inputList) {
     uniqueMap[aminoModel.code] = aminoModel;
   }
   return uniqueMap.values.toList();
+}
+
+// 물 증발량 계산을위해 가능한 아미노산의 갯수 범위를 산정힘
+Tuple2<int, int> getMinMaxRange(FormyType type, double targetMass){
+  int min = 0;
+  int max = 0;
+  // 사용 가능한 아미노산의 종류들의 최대 최소 값
+  double minValue = dataMap.values.reduce((minValue, e) => minValue < e ? minValue : e);
+  double maxValue = dataMap.values.reduce((maxValue, e) => maxValue > e ? maxValue : e);
+  // 포밀레이스가 들어갈수도 있다면 [fWeight] 값이 제일 작은값
+  if(type == FormyType.y || type == FormyType.unknown){
+    max = (targetMass / fWeight).ceil();
+  } else{
+    max = (targetMass / minValue).ceil();
+  }
+  min = (targetMass / maxValue).floor();
+  return Tuple2(min, max);
 }

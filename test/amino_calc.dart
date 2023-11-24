@@ -1,4 +1,5 @@
 final aminoMap = {
+  'f': 27.99, // 테스트를 위해 포밀레이스 포함
   'G': 75.03,
   'A': 89.05,
   'S': 105.04,
@@ -22,9 +23,15 @@ final aminoMap = {
 };
 
 void main(){
-  const String value = 'CFCWCMT';
+  const String value = 'fDEHHIIKLMPPRRWY';
 
   var splitList = value.split('');
-  double  result = splitList.fold(0.0, (sum, e) => sum + (aminoMap[e] ?? 0));
-  print(result);
+  double total = splitList.fold(0.0, (sum, e) => sum + (aminoMap[e] ?? 0));
+  double waterWeight = getWaterWeight(value.length);
+  print('total : $total, water : $waterWeight, result : ${total - waterWeight}');
+}
+
+
+double getWaterWeight(int aminoLength) {
+  return 18.01 * (aminoLength - 1);
 }
