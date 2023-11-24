@@ -47,7 +47,7 @@ class _MassFinderScreenState extends State<MassFinderScreen> {
     });
 
     targetWeight.addListener(() {
-      totalWeight = _targetWeight * 100;
+      totalWeight = _targetWeight;
     });
   }
 

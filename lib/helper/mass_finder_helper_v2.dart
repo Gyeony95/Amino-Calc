@@ -9,7 +9,6 @@ const int saIterations = 100; // 시뮬레이티드 어닐링 반복 횟수
 const double initialTemperature = 10000.0; // 초기 온도
 const double coolingRate = 0.99; // 냉각률
 const double absoluteTemperature = 0.00001; // 최소 온도
-
 // calc 함수에서 초기화 될 사용가능한 아미노산의 리스트
 Map<String, double> dataMap = {};
 
@@ -31,10 +30,14 @@ class MassFinderHelperV2 {
     bestSolutions.sort((a, b) => a.values.single.compareTo(b.values.single));
     bestSolutions = bestSolutions.take(topSolutionsCount).toList();
     // 결과 출력
-    for (var solution in bestSolutions) {
-      print(
-          'Combination: ${solution.keys.join()} with mass ${(targetMass - solution.values.single).abs()} (Error: ${solution.values.single})');
+    for (Map<String, double> solution in bestSolutions) {
+      var splitList = solution.keys.join().split('');
+      double  result = splitList.fold(0.0, (sum, e) => sum + (aminoMap[e] ?? 0));
+      print('combins : ${splitList.join()}, result : $result');
     }
+
+    // isolate 로 리턴할 수 있는 형태로 바꿔줌
+    sendPort.send(bestSolutions);
   }
 }
 
