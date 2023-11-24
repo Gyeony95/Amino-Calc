@@ -1,14 +1,17 @@
 import 'dart:isolate';
 import 'dart:math';
 
+import 'package:mass_finder/model/amino_model.dart';
 import 'package:mass_finder/widget/formylation_selector.dart';
 
 final random = Random();
 const int topSolutionsCount = 20;
-const int saIterations = 100; // 시뮬레이티드 어닐링 반복 횟수
+const int saIterations = 1000; // 시뮬레이티드 어닐링 반복 횟수
 const double initialTemperature = 10000.0; // 초기 온도
 const double coolingRate = 0.99; // 냉각률
 const double absoluteTemperature = 0.00001; // 최소 온도
+const double fWeight = 27.99; // 포밀레이스의 분자량
+
 // calc 함수에서 초기화 될 사용가능한 아미노산의 리스트
 Map<String, double> dataMap = {};
 
@@ -19,25 +22,54 @@ class MassFinderHelperV2 {
       String fomyType, Map<String, double> aminoMap) {
     _formyType = FormyType.decode(fomyType);
     dataMap = Map.from(aminoMap);
-    List<Map<String, double>> bestSolutions = []; // 최적의 해를 저장할 리스트
-    // 최적의 해를 정해진 횟수만큼 반복해서 구함
-    for (int i = 0; i < saIterations; i++) {
-      Map<String, double> solution = simulatedAnnealing(targetMass);
-      bestSolutions.add(solution);
-    }
+    List<AminoModel> bestSolutions = []; // 최적의 해를 저장할 리스트
+    bestSolutions = calcByFType(_formyType, targetMass);
+    bestSolutions = removeDuplicates(bestSolutions); // 중복제거
 
-    // 에너지(오차)에 따라 해들을 정렬하고 상위 20개를 선택
-    bestSolutions.sort((a, b) => a.values.single.compareTo(b.values.single));
+    // 목표값에 가까운 순서대로 해들을 정렬하고 상위 20개를 선택
+    bestSolutions = sortAmino(bestSolutions, targetMass);
     bestSolutions = bestSolutions.take(topSolutionsCount).toList();
+
     // 결과 출력
-    for (Map<String, double> solution in bestSolutions) {
-      var splitList = solution.keys.join().split('');
-      double  result = splitList.fold(0.0, (sum, e) => sum + (aminoMap[e] ?? 0));
-      print('combins : ${splitList.join()}, result : $result');
+    for (var solution in bestSolutions) {
+      print('combins : ${solution.code}, result : ${solution.weight}');
     }
 
     // isolate 로 리턴할 수 있는 형태로 바꿔줌
-    sendPort.send(bestSolutions);
+    List<Map<String, dynamic>> returnList = bestSolutions.map((e) => e.toJson()).toList();
+    sendPort.send(returnList);
+  }
+
+  // 선택된 [FormyType] 에 따라 다르게 계산
+  static List<AminoModel> calcByFType(FormyType fType, double targetMass){
+    List<AminoModel> bestSolutions = []; // 최적의 해를 저장할 리스트
+
+    // 최적의 해를 정해진 횟수만큼 반복해서 구함
+    for (int i = 0; i < saIterations; i++) {
+      switch(fType){
+        case FormyType.n:
+          Map<String, double> solution = simulatedAnnealing(targetMass);
+          var key = solution.keys.first;
+          bestSolutions.add(AminoModel(code: key, weight: getWeightSum(key)));
+          break;
+        case FormyType.y:
+          Map<String, double> solution = simulatedAnnealing(targetMass - fWeight);
+          solution = {'f${solution.keys.first}' : solution.values.first};
+          var key = solution.keys.first;
+          bestSolutions.add(AminoModel(code: key, weight: getWeightSum(key)));
+          break;
+        case FormyType.unknown: // y,n 일때의 값을 모두 가짐
+          Map<String, double> solution1 = simulatedAnnealing(targetMass);
+          Map<String, double> solution2 = simulatedAnnealing(targetMass - fWeight);
+          solution2 = {'f${solution2.keys.first}' : solution2.values.first};
+          var key1 = solution1.keys.first;
+          var key2 = solution2.keys.first;
+          bestSolutions.add(AminoModel(code: key1, weight: getWeightSum(key1)));
+          bestSolutions.add(AminoModel(code: key2, weight: getWeightSum(key2)));
+          break;
+      }
+    }
+    return bestSolutions;
   }
 }
 
@@ -68,6 +100,7 @@ Map<String, double> simulatedAnnealing(double targetMass) {
     // 새 조합이 목표값과의 차이가 더 적으면 새로운 베스트로 셋팅
     if (currentEnergy < bestEnergy) {
       bestSolution = List.from(currentSolution);
+      bestSolution.sort();
       bestEnergy = currentEnergy;
     }
 
@@ -123,4 +156,40 @@ double acceptanceProbability(
   return newEnergy < currentEnergy
       ? 1.0
       : exp((currentEnergy - newEnergy) / temperature);
+}
+
+// 넘어온 code로 무게를 계산하고 포멜레이스 포함이면 그 무게까지 더해줌
+double getWeightSum(String solutionCombine){
+  double result = solutionCombine.split('').fold(0.0, (sum, e) => sum + (dataMap[e] ?? 0));
+  if(solutionCombine.startsWith('f')){
+    result += fWeight;
+  }
+  return result;
+}
+
+// 기준 크기로 정렬
+List<AminoModel> sortAmino(List<AminoModel> list, double compareValue){
+  list.sort((a, b) {
+    if (a.weight == null && b.weight == null) {
+      return 0;
+    } else if (a.weight == null) {
+      return 1;
+    } else if (b.weight == null) {
+      return -1;
+    } else {
+      final double diffA = (a.weight! - compareValue).abs();
+      final double diffB = (b.weight! - compareValue).abs();
+      return diffA.compareTo(diffB);
+    }
+  });
+  return list;
+}
+
+// 리스트 중복제거
+List<AminoModel> removeDuplicates(List<AminoModel> inputList) {
+  Map<String?, AminoModel> uniqueMap = {};
+  for (var aminoModel in inputList) {
+    uniqueMap[aminoModel.code] = aminoModel;
+  }
+  return uniqueMap.values.toList();
 }
