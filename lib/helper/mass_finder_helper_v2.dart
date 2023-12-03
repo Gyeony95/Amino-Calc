@@ -1,6 +1,7 @@
 import 'dart:isolate';
 import 'dart:math';
 
+import 'package:mass_finder/mass_finder_screen.dart';
 import 'package:mass_finder/model/amino_model.dart';
 import 'package:mass_finder/widget/formylation_selector.dart';
 import 'package:tuple/tuple.dart';
@@ -24,10 +25,15 @@ class MassFinderHelperV2 {
     dataMap = Map.from(aminoMap);
     List<AminoModel> bestSolutions = []; // 최적의 해를 저장할 리스트
 
+    // 계산들어갈때 초기값은 빼고 계산하게 처리
+    double initAminoWeight = getInitAminoWeight(initAminos);
+    targetMass -= initAminoWeight;
+
+    // 아미노산의 길이에 필수로 입력되어야 하는 seq 길이 더해줌
     Tuple2<int, int> range = getMinMaxRange(_formyType, targetMass);
 
     // 물의 무게를 빼주기 위해 가능한 범위만큼 가중치를 조절해가며 반복해서 계산
-    for(var i = range.item1; i < range.item2; i ++){
+    for (var i = range.item1; i < range.item2; i++) {
       var addWeight = getWaterWeight(i);
       var solutions = calcByFType(_formyType, targetMass + addWeight);
       solutions = removeDuplicates(solutions); // 중복제거
@@ -38,38 +44,43 @@ class MassFinderHelperV2 {
     bestSolutions = sortAmino(bestSolutions, targetMass);
     bestSolutions = bestSolutions.take(topSolutionsCount).toList();
 
+    bestSolutions = setInitAminoToResult(bestSolutions, initAminos, initAminoWeight);
+
     // 결과 출력
     for (var solution in bestSolutions) {
       print('combins : ${solution.code}, result : ${solution.weight}');
     }
 
     // isolate 로 리턴할 수 있는 형태로 바꿔줌
-    List<Map<String, dynamic>> returnList = bestSolutions.map((e) => e.toJson()).toList();
+    List<Map<String, dynamic>> returnList =
+        bestSolutions.map((e) => e.toJson()).toList();
     sendPort.send(returnList);
   }
 
   // 선택된 [FormyType] 에 따라 다르게 계산
-  static List<AminoModel> calcByFType(FormyType fType, double targetMass){
+  static List<AminoModel> calcByFType(FormyType fType, double targetMass) {
     List<AminoModel> bestSolutions = []; // 최적의 해를 저장할 리스트
 
     // 최적의 해를 정해진 횟수만큼 반복해서 구함
     for (int i = 0; i < saIterations; i++) {
-      switch(fType){
+      switch (fType) {
         case FormyType.n:
           Map<String, double> solution = simulatedAnnealing(targetMass);
           var key = solution.keys.first;
           bestSolutions.add(AminoModel(code: key, weight: getWeightSum(key)));
           break;
         case FormyType.y:
-          Map<String, double> solution = simulatedAnnealing(targetMass - fWeight);
-          solution = {'f${solution.keys.first}' : solution.values.first};
+          Map<String, double> solution =
+              simulatedAnnealing(targetMass - fWeight);
+          solution = {'f${solution.keys.first}': solution.values.first};
           var key = solution.keys.first;
           bestSolutions.add(AminoModel(code: key, weight: getWeightSum(key)));
           break;
         case FormyType.unknown: // y,n 일때의 값을 모두 가짐
           Map<String, double> solution1 = simulatedAnnealing(targetMass);
-          Map<String, double> solution2 = simulatedAnnealing(targetMass - fWeight);
-          solution2 = {'f${solution2.keys.first}' : solution2.values.first};
+          Map<String, double> solution2 =
+              simulatedAnnealing(targetMass - fWeight);
+          solution2 = {'f${solution2.keys.first}': solution2.values.first};
           var key1 = solution1.keys.first;
           var key2 = solution2.keys.first;
           bestSolutions.add(AminoModel(code: key1, weight: getWeightSum(key1)));
@@ -167,9 +178,10 @@ double acceptanceProbability(
 }
 
 // 넘어온 code로 무게를 계산하고 포멜레이스 포함이면 그 무게까지 더해줌
-double getWeightSum(String solutionCombine){
-  double result = solutionCombine.split('').fold(0.0, (sum, e) => sum + (dataMap[e] ?? 0));
-  if(solutionCombine.startsWith('f')){
+double getWeightSum(String solutionCombine) {
+  double result =
+      solutionCombine.split('').fold(0.0, (sum, e) => sum + (dataMap[e] ?? 0));
+  if (solutionCombine.startsWith('f')) {
     result += fWeight;
   }
   // 물 증발량 제거
@@ -178,11 +190,12 @@ double getWeightSum(String solutionCombine){
 }
 
 double getWaterWeight(int aminoLength) {
+  if(aminoLength == 0) return 0;
   return 18.01 * (aminoLength - 1);
 }
 
 // 기준 크기로 정렬
-List<AminoModel> sortAmino(List<AminoModel> list, double compareValue){
+List<AminoModel> sortAmino(List<AminoModel> list, double compareValue) {
   list.sort((a, b) {
     if (a.weight == null && b.weight == null) {
       return 0;
@@ -209,18 +222,53 @@ List<AminoModel> removeDuplicates(List<AminoModel> inputList) {
 }
 
 // 물 증발량 계산을위해 가능한 아미노산의 갯수 범위를 산정힘
-Tuple2<int, int> getMinMaxRange(FormyType type, double targetMass){
+Tuple2<int, int> getMinMaxRange(FormyType type, double targetMass) {
   int min = 0;
   int max = 0;
   // 사용 가능한 아미노산의 종류들의 최대 최소 값
-  double minValue = dataMap.values.reduce((minValue, e) => minValue < e ? minValue : e);
-  double maxValue = dataMap.values.reduce((maxValue, e) => maxValue > e ? maxValue : e);
+  double minValue =
+      dataMap.values.reduce((minValue, e) => minValue < e ? minValue : e);
+  double maxValue =
+      dataMap.values.reduce((maxValue, e) => maxValue > e ? maxValue : e);
   // 포밀레이스가 들어갈수도 있다면 [fWeight] 값이 제일 작은값
-  if(type == FormyType.y || type == FormyType.unknown){
+  if (type == FormyType.y || type == FormyType.unknown) {
     max = (targetMass / fWeight).ceil();
-  } else{
+  } else {
     max = (targetMass / minValue).ceil();
   }
   min = (targetMass / maxValue).floor();
   return Tuple2(min, max);
+}
+
+// 초기 입력된 아미노산의 총 무게에서 물 증발량을 제거한 값
+double getInitAminoWeight(String initAmino) {
+  // 초기 입력값의 물 증발량, 근데 init 의 물 증발량 구할떄는 길이에 -1 해주면 안됨 나중에 또 -1 해줄거라서
+  double initAminoWaterWeight = getWaterWeight(initAmino.length + 1);
+  double initAminoWeight = 0;
+  if (initAmino.isNotEmpty) {
+    for (var i in initAmino.split('')) {
+      initAminoWeight += aminoMap[i] ?? 0;
+    }
+  }
+  return initAminoWeight - initAminoWaterWeight;
+}
+
+/// 기존 베스트 솔루션 에서 init 값을 앞에 붙여주는 로직
+List<AminoModel> setInitAminoToResult(
+    List<AminoModel> bestSolutions, String initAmino, double initAminoWeight) {
+  if (initAmino.isEmpty) return bestSolutions;
+  for (var i = 0; i < bestSolutions.length; i++) {
+    var item = bestSolutions[i];
+    var firstString = item.code!.substring(0,1);
+    if (firstString == 'f') {
+      bestSolutions[i].code =
+          bestSolutions[i].code?.replaceFirst('f', 'f$initAmino');
+    } else {
+      bestSolutions[i].code = bestSolutions[i]
+          .code
+          ?.replaceFirst(firstString, '$initAmino$firstString');
+    }
+    bestSolutions[i].weight = bestSolutions[i].weight! + initAminoWeight;
+  }
+  return bestSolutions;
 }
