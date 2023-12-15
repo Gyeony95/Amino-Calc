@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:mass_finder/mass_finder_screen.dart';
 import 'package:mass_finder/model/amino_model.dart';
 import 'package:mass_finder/widget/formylation_selector.dart';
+import 'package:mass_finder/widget/ion_selector.dart';
 import 'package:tuple/tuple.dart';
 
 final random = Random();
@@ -18,9 +19,46 @@ Map<String, double> dataMap = {};
 
 class MassFinderHelperV2 {
   static FormyType _formyType = FormyType.unknown;
+  static IonType _ionType = IonType.unknown;
 
-  static calc(SendPort sendPort, double targetMass, String initAminos,
-      String fomyType, Map<String, double> aminoMap) {
+  static calcByIonType(SendPort sendPort, double targetMass, String initAminos,
+      String fomyType, String ionType, Map<String, double> aminoMap) {
+    _ionType = IonType.decode(ionType);
+    List<AminoModel> bestSolutions = [];
+    switch (_ionType) {
+      case IonType.none: // 없으면 그냥 그대로 계산
+        bestSolutions =
+            calc(sendPort, targetMass, initAminos, fomyType, ionType, aminoMap);
+      case IonType.unknown:
+        // IonType을 모르면 unKnown을 제외함 모든타입을 계산해야함
+        for(var i in IonType.values){
+          if(i == IonType.unknown) continue;
+          bestSolutions.addAll(calc(sendPort, targetMass - i.weight, initAminos,
+              fomyType, ionType, aminoMap));
+        }
+        // calc 함수에서는 targetMass 를 낮춰놔서 낮춘만큼 다시 더해줌
+        bestSolutions.map((e) => e.weight = e.weight! + e.ionType!.weight).toList();
+        // 다시 정렬 후 20개 자름
+        bestSolutions = sortAmino(bestSolutions, targetMass);
+        bestSolutions = bestSolutions.take(topSolutionsCount).toList();
+      default: // H, Na, k 일때 총 무게에서만 제외해서 계산
+        bestSolutions = calc(sendPort, targetMass - _ionType.weight, initAminos,
+            fomyType, ionType, aminoMap);
+        // calc 함수에서는 targetMass 를 낮춰놔서 낮춘만큼 다시 더해줌
+        bestSolutions.map((e) => e.weight = e.weight! + e.ionType!.weight).toList();
+    }
+    List<Map<String, dynamic>> returnList =
+        bestSolutions.map((e) => e.toJson()).toList();
+    sendPort.send(returnList);
+  }
+
+  static List<AminoModel> calc(
+      SendPort sendPort,
+      double targetMass,
+      String initAminos,
+      String fomyType,
+      String ionType,
+      Map<String, double> aminoMap) {
     _formyType = FormyType.decode(fomyType);
     dataMap = Map.from(aminoMap);
     List<AminoModel> bestSolutions = []; // 최적의 해를 저장할 리스트
@@ -44,17 +82,17 @@ class MassFinderHelperV2 {
     bestSolutions = sortAmino(bestSolutions, targetMass);
     bestSolutions = bestSolutions.take(topSolutionsCount).toList();
 
-    bestSolutions = setInitAminoToResult(bestSolutions, initAminos, initAminoWeight);
-
+    bestSolutions =
+        setInitAminoToResult(bestSolutions, initAminos, initAminoWeight);
+    bestSolutions =
+        setMetaData(bestSolutions, _formyType, _ionType, initAminos);
     // 결과 출력
     for (var solution in bestSolutions) {
       print('combins : ${solution.code}, result : ${solution.weight}');
     }
 
     // isolate 로 리턴할 수 있는 형태로 바꿔줌
-    List<Map<String, dynamic>> returnList =
-        bestSolutions.map((e) => e.toJson()).toList();
-    sendPort.send(returnList);
+    return bestSolutions;
   }
 
   // 선택된 [FormyType] 에 따라 다르게 계산
@@ -190,7 +228,7 @@ double getWeightSum(String solutionCombine) {
 }
 
 double getWaterWeight(int aminoLength) {
-  if(aminoLength == 0) return 0;
+  if (aminoLength == 0) return 0;
   return 18.01 * (aminoLength - 1);
 }
 
@@ -259,7 +297,7 @@ List<AminoModel> setInitAminoToResult(
   if (initAmino.isEmpty) return bestSolutions;
   for (var i = 0; i < bestSolutions.length; i++) {
     var item = bestSolutions[i];
-    var firstString = item.code!.substring(0,1);
+    var firstString = item.code!.substring(0, 1);
     if (firstString == 'f') {
       bestSolutions[i].code =
           bestSolutions[i].code?.replaceFirst('f', 'f$initAmino');
@@ -271,4 +309,15 @@ List<AminoModel> setInitAminoToResult(
     bestSolutions[i].weight = bestSolutions[i].weight! + initAminoWeight;
   }
   return bestSolutions;
+}
+
+/// FormyType, IonType, essential seq 붙여주는 부분
+List<AminoModel> setMetaData(List<AminoModel> bestSolutions,
+    FormyType formyType, IonType ionType, String essentialSeq) {
+  return bestSolutions.map((e) {
+    e.formyType = formyType;
+    e.ionType = ionType;
+    e.essentialSeq = essentialSeq;
+    return e;
+  }).toList();
 }

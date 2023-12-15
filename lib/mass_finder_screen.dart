@@ -5,6 +5,7 @@ import 'package:mass_finder/util/alert_toast.dart';
 import 'package:mass_finder/model/amino_model.dart';
 import 'package:mass_finder/widget/amino_map_selector.dart';
 import 'package:mass_finder/widget/formylation_selector.dart';
+import 'package:mass_finder/widget/ion_selector.dart';
 import 'package:mass_finder/widget/loading_overlay.dart';
 import 'package:mass_finder/widget/normal_text_field.dart';
 import 'package:flutter/material.dart';
@@ -31,6 +32,7 @@ class _MassFinderScreenState extends State<MassFinderScreen> {
   static double? totalWeight;
 
   FormyType currentFormyType = FormyType.unknown;
+  IonType currentIonType = IonType.unknown;
 
   // 계산시에 사용할 아미노산 리스트 , 최초에는 모든 아미노산을 포함한다.
   Map<String, double> inputAminos = Map.from(aminoMap);
@@ -41,7 +43,8 @@ class _MassFinderScreenState extends State<MassFinderScreen> {
     _receivePort.listen((message) {
       setState(() {
         var mapList = message as List<Map<String, dynamic>>;
-        resultList = mapList.map((e) => AminoModel.fromJson(e)).toList();
+        var responseList = mapList.map((e) => AminoModel.fromJson(e)).toList();
+        resultList.addAll(responseList);
         isLoading = false;
       });
     });
@@ -104,6 +107,15 @@ class _MassFinderScreenState extends State<MassFinderScreen> {
                 });
               },
             ),
+            // 이온 선택
+            IonSelector(
+              fomyType: currentIonType,
+              onChange: (newType) {
+                setState(() {
+                  currentIonType = newType;
+                });
+              },
+            ),
             // 아미노산 종류 선택부분
             AminoMapSelector(
               onChangeAminos: (aminos) {
@@ -122,7 +134,7 @@ class _MassFinderScreenState extends State<MassFinderScreen> {
                 width: double.infinity,
                 height: 50,
                 alignment: Alignment.center,
-                child: const Text('Calculation!'),
+                child: const Text('Calculate!'),
               ),
             ),
             const SizedBox(height: 10),
@@ -188,14 +200,11 @@ class _MassFinderScreenState extends State<MassFinderScreen> {
     double w = totalWeight ?? 0.0;
     String a = initAmino.text;
     String f = currentFormyType.text;
+    String i = currentIonType.text;
     Map<String, double> ia = inputAminos;
     try {
-      // Isolate.spawn<SendPort>(
-      //   (sp) => MassFinderHelper.calc(sp, w, a, f, ia),
-      //   _receivePort.sendPort,
-      // );
       Isolate.spawn<SendPort>(
-            (sp) => MassFinderHelperV2.calc(sp, w, a, f, ia),
+            (sp) => MassFinderHelperV2.calcByIonType(sp, w, a, f, i, ia),
         _receivePort.sendPort,
       );
     } catch (e) {
