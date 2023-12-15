@@ -10,6 +10,8 @@ import 'package:mass_finder/widget/loading_overlay.dart';
 import 'package:mass_finder/widget/normal_text_field.dart';
 import 'package:flutter/material.dart';
 
+import 'widget/highlight_test.dart';
+
 class MassFinderScreen extends StatefulWidget {
   const MassFinderScreen({Key? key}) : super(key: key);
 
@@ -173,11 +175,19 @@ class _MassFinderScreenState extends State<MassFinderScreen> {
   }
 
   /// init값, ion값 등에 따라 텍스트를 만들어주는 위젯
-  Widget seqStringBuilder(AminoModel item){
-    if(item.ionType == IonType.none){
-      return Text(item.code ?? '');
+  Widget seqStringBuilder(AminoModel item) {
+    if (item.ionType == IonType.none) {
+      return HighLightText(
+        text: item.code ?? '',
+        word: item.essentialSeq ?? '',
+        style: TextStyle(),
+      );
     }
-    return Text('${item.code} + ${item.ionType?.text ?? ''}');
+    return HighLightText(
+      text: '${item.code} + ${item.ionType?.text ?? ''}',
+      word: item.essentialSeq ?? '',
+      style: TextStyle(),
+    );
   }
 
   double textToDouble(String value) {
@@ -202,7 +212,7 @@ class _MassFinderScreenState extends State<MassFinderScreen> {
 
   /// 계산하기 클릭 이벤트
   Future<void> onTapCalc(BuildContext context) async {
-    if(validate(context) == false) return;
+    if (validate(context) == false) return;
     resultList.clear();
     isLoading = true;
     setState(() {});
@@ -213,7 +223,7 @@ class _MassFinderScreenState extends State<MassFinderScreen> {
     Map<String, double> ia = inputAminos;
     try {
       Isolate.spawn<SendPort>(
-            (sp) => MassFinderHelperV2.calcByIonType(sp, w, a, f, i, ia),
+        (sp) => MassFinderHelperV2.calcByIonType(sp, w, a, f, i, ia),
         _receivePort.sendPort,
       );
     } catch (e) {
@@ -222,27 +232,27 @@ class _MassFinderScreenState extends State<MassFinderScreen> {
   }
 
   // 계산 시작전 각종 조건을 체크하는 부분
-  bool validate(BuildContext context){
+  bool validate(BuildContext context) {
     String? validText = getValidateMsg();
-    if(validText == null) return true;
+    if (validText == null) return true;
     AlertToast.show(msg: validText, context: context);
     return false;
   }
 
   // 실제 각 조건별 메세지를 셋팅하는 부분
-  String? getValidateMsg(){
+  String? getValidateMsg() {
     String? msg;
     // 체크박스에 포함되지 않은값을 초기값으로 넣으려고 할때
     initAmino.text = initAmino.text.replaceAll(' ', '');
     String initAminoText = initAmino.text;
     initAminoText.split('').forEach((e) {
-      if(inputAminos[e] == null){
+      if (inputAminos[e] == null) {
         msg = '체크박스에 포함되어있지 않은 값이 Essential Sequence에 들어있음';
       }
     });
     // exact mass 값을 안넣었을때
     if (totalWeight == null) {
-      msg = 'please enter extra mass!';
+      msg = 'please enter exact mass!';
     }
     return msg;
   }
