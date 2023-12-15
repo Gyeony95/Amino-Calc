@@ -34,7 +34,7 @@ class MassFinderHelperV2 {
         for(var i in IonType.values){
           if(i == IonType.unknown) continue;
           bestSolutions.addAll(calc(sendPort, targetMass - i.weight, initAminos,
-              fomyType, ionType, aminoMap));
+              fomyType, i.text, aminoMap));
         }
         // calc 함수에서는 targetMass 를 낮춰놔서 낮춘만큼 다시 더해줌
         bestSolutions.map((e) => e.weight = e.weight! + e.ionType!.weight).toList();
@@ -85,7 +85,7 @@ class MassFinderHelperV2 {
     bestSolutions =
         setInitAminoToResult(bestSolutions, initAminos, initAminoWeight);
     bestSolutions =
-        setMetaData(bestSolutions, _formyType, _ionType, initAminos);
+        setMetaData(bestSolutions, _formyType, IonType.decode(ionType), initAminos);
     // 결과 출력
     for (var solution in bestSolutions) {
       print('combins : ${solution.code}, result : ${solution.weight}');

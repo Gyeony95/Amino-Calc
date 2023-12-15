@@ -162,13 +162,22 @@ class _MassFinderScreenState extends State<MassFinderScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Sequence : ${item.code}'),
+          // Text('Sequence : ${item.code}'),
+          seqStringBuilder(item),
           // Text('물 증발 전 무게 : ${item.totalWeight}'),
           // Text('물 증발량 : ${item.waterWeight}'),
           Text('Exact Mass : ${item.weight}'),
         ],
       ),
     );
+  }
+
+  /// init값, ion값 등에 따라 텍스트를 만들어주는 위젯
+  Widget seqStringBuilder(AminoModel item){
+    if(item.ionType == IonType.none){
+      return Text(item.code ?? '');
+    }
+    return Text('${item.code} + ${item.ionType?.text ?? ''}');
   }
 
   double textToDouble(String value) {
