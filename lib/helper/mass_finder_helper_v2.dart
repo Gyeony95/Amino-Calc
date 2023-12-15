@@ -47,6 +47,8 @@ class MassFinderHelperV2 {
         // calc 함수에서는 targetMass 를 낮춰놔서 낮춘만큼 다시 더해줌
         bestSolutions.map((e) => e.weight = e.weight! + e.ionType!.weight).toList();
     }
+    // 유사도 계산
+    bestSolutions.map((e) => e.similarity = calculateSimilarity(targetMass, e.weight ?? 0)).toList();
     List<Map<String, dynamic>> returnList =
         bestSolutions.map((e) => e.toJson()).toList();
     sendPort.send(returnList);
@@ -320,4 +322,17 @@ List<AminoModel> setMetaData(List<AminoModel> bestSolutions,
     e.essentialSeq = essentialSeq;
     return e;
   }).toList();
+}
+
+/// 유사도 체크
+double calculateSimilarity(double a, double b) {
+  // 두 값의 차이 계산
+  double difference = (a - b).abs();
+  // 유사도 계산
+  double similarity = 100 - ((difference / a) * 100);
+  // 소수점 두 자리까지 반올림
+  similarity = double.parse(similarity.toStringAsFixed(2));
+  // 0 미만의 유사도는 0으로 설정
+  similarity = similarity < 0 ? 0 : similarity;
+  return similarity;
 }

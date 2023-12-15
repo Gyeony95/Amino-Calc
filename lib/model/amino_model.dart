@@ -7,11 +7,11 @@ class AminoModel {
   double? waterWeight;
   double? weight;
 
-
   // 결과를 그려주기 위한 값들
   FormyType? formyType;
   IonType? ionType;
   String? essentialSeq;
+  double? similarity;
 
   AminoModel({
     this.code,
@@ -21,6 +21,7 @@ class AminoModel {
     this.formyType,
     this.ionType,
     this.essentialSeq,
+    this.similarity,
   });
 
   AminoModel.fromJson(Map<String, dynamic> json) {
@@ -31,6 +32,7 @@ class AminoModel {
     formyType = FormyType.decode(json['formyType']);
     ionType = IonType.decode(json['ionType']);
     essentialSeq = json['essentialSeq'];
+    similarity = json['similarity'];
   }
 
   Map<String, dynamic> toJson() {
@@ -42,6 +44,7 @@ class AminoModel {
     data['formyType'] = formyType?.text;
     data['ionType'] = ionType?.text;
     data['essentialSeq'] = essentialSeq;
+    data['similarity'] = similarity;
     return data;
   }
 }
