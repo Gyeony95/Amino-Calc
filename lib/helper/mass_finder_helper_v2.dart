@@ -26,9 +26,9 @@ class MassFinderHelperV2 {
     _ionType = IonType.decode(ionType);
     List<AminoModel> bestSolutions = [];
     switch (_ionType) {
-      case IonType.none: // 없으면 그냥 그대로 계산
-        bestSolutions =
-            calc(sendPort, targetMass, initAminos, fomyType, ionType, aminoMap);
+      // case IonType.none: // 없으면 그냥 그대로 계산
+      //   bestSolutions =
+      //       calc(sendPort, targetMass, initAminos, fomyType, ionType, aminoMap);
       case IonType.unknown:
         // IonType을 모르면 unKnown을 제외함 모든타입을 계산해야함
         for(var i in IonType.values){

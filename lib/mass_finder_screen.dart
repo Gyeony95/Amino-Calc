@@ -34,7 +34,7 @@ class _MassFinderScreenState extends State<MassFinderScreen> {
   static double? totalWeight;
 
   FormyType currentFormyType = FormyType.unknown;
-  IonType currentIonType = IonType.unknown;
+  IonType currentIonType = IonType.H;
 
   // 계산시에 사용할 아미노산 리스트 , 최초에는 모든 아미노산을 포함한다.
   Map<String, double> inputAminos = Map.from(aminoMap);
@@ -109,6 +109,7 @@ class _MassFinderScreenState extends State<MassFinderScreen> {
                 });
               },
             ),
+            const SizedBox(height: 5),
             // 이온 선택
             IonSelector(
               fomyType: currentIonType,
@@ -118,6 +119,7 @@ class _MassFinderScreenState extends State<MassFinderScreen> {
                 });
               },
             ),
+            const SizedBox(height: 5),
             // 아미노산 종류 선택부분
             AminoMapSelector(
               onChangeAminos: (aminos) {
@@ -177,13 +179,6 @@ class _MassFinderScreenState extends State<MassFinderScreen> {
 
   /// init값, ion값 등에 따라 텍스트를 만들어주는 위젯
   Widget seqStringBuilder(AminoModel item) {
-    if (item.ionType == IonType.none) {
-      return HighLightText(
-        text: item.code ?? '',
-        word: item.essentialSeq ?? '',
-        style: TextStyle(),
-      );
-    }
     return HighLightText(
       text: '${item.code} + ${item.ionType?.text ?? ''}',
       word: item.essentialSeq ?? '',

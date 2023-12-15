@@ -34,27 +34,33 @@ class _AminoMapSelectorState extends State<AminoMapSelector> {
 
   @override
   Widget build(BuildContext context) {
-    return Wrap(
-      children: selectedAminos.keys.map((String amino) {
-        return Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Checkbox(
-              value: selectedAminos[amino]!,
-              onChanged: (bool? value) {
-                setState(
-                  () {
-                    selectedAminos[amino] = value!;
-                    widget.onChangeAminos(selectedAminos);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('Amino acid'),
+        Wrap(
+          children: selectedAminos.keys.map((String amino) {
+            return Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Checkbox(
+                  value: selectedAminos[amino]!,
+                  onChanged: (bool? value) {
+                    setState(
+                          () {
+                        selectedAminos[amino] = value!;
+                        widget.onChangeAminos(selectedAminos);
+                      },
+                    );
                   },
-                );
-              },
-            ),
-            Text(amino),
-            const SizedBox(width: 10)
-          ],
-        );
-      }).toList(),
+                ),
+                Text(amino),
+                const SizedBox(width: 10)
+              ],
+            );
+          }).toList(),
+        ),
+      ],
     );
   }
 }

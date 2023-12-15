@@ -6,7 +6,7 @@ enum IonType {
   H('H', 1.008),
   Na('Na', 22.990),
   K('K', 39.098),
-  none('none', 0),
+  // none('none', 0),
   unknown('unknown', 0);
 
   final String text;
