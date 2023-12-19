@@ -299,14 +299,19 @@ List<AminoModel> setInitAminoToResult(
   if (initAmino.isEmpty) return bestSolutions;
   for (var i = 0; i < bestSolutions.length; i++) {
     var item = bestSolutions[i];
-    var firstString = item.code!.substring(0, 1);
-    if (firstString == 'f') {
-      bestSolutions[i].code =
-          bestSolutions[i].code?.replaceFirst('f', 'f$initAmino');
-    } else {
-      bestSolutions[i].code = bestSolutions[i]
-          .code
-          ?.replaceFirst(firstString, '$initAmino$firstString');
+
+    if((item.code ?? '').isEmpty){
+      bestSolutions[i].code = initAmino;
+    }else{
+      var firstString = item.code!.substring(0, 1);
+      if (firstString == 'f') {
+        bestSolutions[i].code =
+            bestSolutions[i].code?.replaceFirst('f', 'f$initAmino');
+      } else {
+        bestSolutions[i].code = bestSolutions[i]
+            .code
+            ?.replaceFirst(firstString, '$initAmino$firstString');
+      }
     }
     bestSolutions[i].weight = bestSolutions[i].weight! + initAminoWeight;
   }
