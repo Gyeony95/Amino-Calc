@@ -6,14 +6,15 @@ class NormalTextField extends StatefulWidget {
   final TextEditingController textController;
   final String? hintText;
   final String? labelText;
-  final bool digitOnly;
   final Function(String)? onChange;
+  final List<TextInputFormatter>? inputFormatters;
+
   const NormalTextField({
     required this.textController,
     this.hintText,
     this.labelText,
-    this.digitOnly = false,
     this.onChange,
+    this.inputFormatters,
   });
 
   @override
@@ -30,7 +31,7 @@ class _NormalTextFieldState extends State<NormalTextField> {
 
     return TextFormField(
       controller: widget.textController,
-      inputFormatters: widget.digitOnly ? [FilteringTextInputFormatter.digitsOnly] : [],
+      inputFormatters: widget.inputFormatters ?? [],
       onChanged: (value){
         if(widget.onChange != null){
           widget.onChange!.call(value);
@@ -48,6 +49,18 @@ class _NormalTextFieldState extends State<NormalTextField> {
         focusedErrorBorder: _border.copyWith(
             borderSide: const BorderSide(color: Colors.red, width: 2.0)),
       ),
+    );
+  }
+}
+
+/// 소문자 -> 대문자 포매터
+class UpperCaseTextFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+    // 새로운 값을 대문자로 변환하여 반환합니다.
+    return TextEditingValue(
+      text: newValue.text.toUpperCase(),
+      selection: newValue.selection,
     );
   }
 }

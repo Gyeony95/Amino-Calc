@@ -1,5 +1,6 @@
 import 'dart:isolate';
 
+import 'package:flutter/services.dart';
 import 'package:mass_finder/helper/mass_finder_helper.dart';
 import 'package:mass_finder/util/alert_toast.dart';
 import 'package:mass_finder/model/amino_model.dart';
@@ -102,13 +103,14 @@ class _MassFinderScreenState extends State<MassFinderScreen> {
             NormalTextField(
               textController: targetWeight,
               labelText: 'Exact Mass', // 총 단백질의 무게
-              digitOnly: false,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               hintText: 'please enter exact mass(only digit)', // 숫자만 입력
             ),
             const SizedBox(height: 10),
             NormalTextField(
               textController: initAmino,
               labelText: 'Essential Sequence (Option)',
+              inputFormatters: [UpperCaseTextFormatter()],
               hintText: 'please enter essential sequence (olny alphabet)',
             ),
             const SizedBox(height: 10),
