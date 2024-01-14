@@ -67,6 +67,7 @@ class _MassFinderScreenState extends State<MassFinderScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Align(
           alignment: Alignment.topCenter,
@@ -270,7 +271,7 @@ class _MassFinderScreenState extends State<MassFinderScreen> {
       }
     });
     // exact mass 값을 안넣었을때
-    if (totalWeight == null) {
+    if (totalWeight == null || targetWeight.text.isEmpty) {
       msg = 'please enter exact mass!';
     }
 

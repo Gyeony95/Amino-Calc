@@ -37,7 +37,7 @@ class _IonSelectorState extends State<IonSelector> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Ion'),
+        const Text('Adduct'),
         Row(
           children: [
             ...List.generate(
