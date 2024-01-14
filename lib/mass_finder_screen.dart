@@ -10,7 +10,7 @@ import 'package:mass_finder/widget/loading_overlay.dart';
 import 'package:mass_finder/widget/normal_text_field.dart';
 import 'package:flutter/material.dart';
 
-import 'widget/highlight_test.dart';
+import 'widget/highlight_text.dart';
 
 class MassFinderScreen extends StatefulWidget {
   const MassFinderScreen({Key? key}) : super(key: key);
