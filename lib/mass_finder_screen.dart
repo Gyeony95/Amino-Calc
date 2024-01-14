@@ -193,7 +193,8 @@ class _MassFinderScreenState extends State<MassFinderScreen> {
           // Text('물 증발 전 무게 : ${item.totalWeight}'),
           // Text('물 증발량 : ${item.waterWeight}'),
           Text('Exact Mass : ${item.weight}'),
-          Text('Similarity : ${item.similarity}%'),
+          // Text('Similarity : ${item.similarity}%'),
+          Text('Difference : ${((totalWeight ?? 0) - (item.weight ?? 0)).abs()}')
         ],
       ),
     );

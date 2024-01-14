@@ -113,6 +113,7 @@ class _AminoMapSelectorState extends State<AminoMapSelector> {
     for(var key in selectedAminos.keys){
       selectedAminos[key] = strep.contains(key);
     }
+    widget.onChangeAminos(selectedAminos);
     _checkButtonAllSelected();
   }
 }
