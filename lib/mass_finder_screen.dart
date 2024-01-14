@@ -273,6 +273,12 @@ class _MassFinderScreenState extends State<MassFinderScreen> {
     if (totalWeight == null) {
       msg = 'please enter exact mass!';
     }
+
+    Map<String, double> ia = inputAminos;
+    ia.addAll(ncaaMap);
+    if(ia.isEmpty){
+      msg = '사용 가능한 아미노산이 없습니다.';
+    }
     return msg;
   }
 }
