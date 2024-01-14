@@ -7,6 +7,7 @@ import 'package:mass_finder/widget/amino_map_selector.dart';
 import 'package:mass_finder/widget/formylation_selector.dart';
 import 'package:mass_finder/widget/ion_selector.dart';
 import 'package:mass_finder/widget/loading_overlay.dart';
+import 'package:mass_finder/widget/ncaa_input_area.dart';
 import 'package:mass_finder/widget/normal_text_field.dart';
 import 'package:flutter/material.dart';
 
@@ -38,6 +39,12 @@ class _MassFinderScreenState extends State<MassFinderScreen> {
 
   // 계산시에 사용할 아미노산 리스트 , 최초에는 모든 아미노산을 포함한다.
   Map<String, double> inputAminos = Map.from(aminoMap);
+
+  // ncaa의 입력값을 받는 변수
+  Map<String, double> ncaaMap = {};
+
+  double get _maxWidth => 500;
+  double get _minWidth => 300;
 
   @override
   void initState() {
@@ -75,16 +82,21 @@ class _MassFinderScreenState extends State<MassFinderScreen> {
   Widget _buildBody() {
     return Container(
       padding: const EdgeInsets.all(40),
-      constraints: const BoxConstraints(
-        maxWidth: 500,
-        minWidth: 300,
+      constraints: BoxConstraints(
+        maxWidth: _maxWidth,
+        minWidth: _minWidth,
       ),
       child: SingleChildScrollView(
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Mass finder',
-              style: TextStyle(fontSize: 20, color: Colors.black),
+            SizedBox(
+              width: _maxWidth,
+              child: const Text(
+                'Mass finder',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 20, color: Colors.black),
+              ),
             ),
             const SizedBox(height: 10),
             NormalTextField(
@@ -131,6 +143,13 @@ class _MassFinderScreenState extends State<MassFinderScreen> {
                 }
               },
             ),
+            const SizedBox(height: 10),
+            NcAAInputArea(
+              initNcAA: ncaaMap,
+              onChangeNcAA: (_map){
+              _map.removeWhere((k, v) => v == 0.0);
+              ncaaMap = _map;
+            },),
             const SizedBox(height: 10),
             ElevatedButton(
               onPressed: () => onTapCalc(context),
@@ -217,6 +236,8 @@ class _MassFinderScreenState extends State<MassFinderScreen> {
     String f = currentFormyType.text;
     String i = currentIonType.text;
     Map<String, double> ia = inputAminos;
+    // ncaa 적용
+    ia.addAll(ncaaMap);
     try {
       Isolate.spawn<SendPort>(
         (sp) => MassFinderHelperV2.calcByIonType(sp, w, a, f, i, ia),
@@ -242,8 +263,8 @@ class _MassFinderScreenState extends State<MassFinderScreen> {
     initAmino.text = initAmino.text.replaceAll(' ', '');
     String initAminoText = initAmino.text;
     initAminoText.split('').forEach((e) {
-      if (inputAminos[e] == null) {
-        msg = '체크박스에 포함되어있지 않은 값이 Essential Sequence에 들어있음';
+      if (inputAminos[e] == null && ncaaMap[e] == null) {
+        msg = '체크박스와 ncAA에 포함 되어있지 않은 값이 Essential Sequence에 들어있음';
       }
     });
     // exact mass 값을 안넣었을때
