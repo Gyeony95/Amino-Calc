@@ -79,3 +79,8 @@ class _NcAAInputAreaState extends State<NcAAInputArea> {
     );
   }
 }
+
+bool isNcAA(String key){
+  var ncaa = ['B','J','O','U','X','Z'];
+  return ncaa.contains(key);
+}

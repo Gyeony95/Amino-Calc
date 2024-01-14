@@ -202,10 +202,28 @@ class _MassFinderScreenState extends State<MassFinderScreen> {
 
   /// init값, ion값 등에 따라 텍스트를 만들어주는 위젯
   Widget seqStringBuilder(AminoModel item) {
-    return HighLightText(
-      text: '${item.code} + ${item.ionType?.text ?? ''}',
-      word: item.essentialSeq ?? '',
-      style: TextStyle(),
+
+    String code = '';
+    String ncaa = '';
+    item.code = (item.code ?? '').replaceFirst(item.essentialSeq ?? '', '');
+    List<String> seqList = (item.code ?? '').split('');
+    for(var seq in seqList){
+      if(isNcAA(seq)){
+        ncaa = '$ncaa$seq';
+      }else{
+        code = '$code$seq';
+      }
+    }
+    return Text.rich(
+      TextSpan(
+        style: const TextStyle(color: Colors.black),
+        children: [
+          TextSpan(text: code),
+          TextSpan(text: item.essentialSeq ?? '', style: const TextStyle(color: Colors.blue)),
+          TextSpan(text: ncaa, style: const TextStyle(fontWeight: FontWeight.w600)),
+          TextSpan(text: ' + ${item.ionType?.text ?? ''}'),
+        ],
+      ),
     );
   }
 
