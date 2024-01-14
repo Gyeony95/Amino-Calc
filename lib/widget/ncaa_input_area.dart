@@ -45,11 +45,17 @@ class _NcAAInputAreaState extends State<NcAAInputArea> {
 
   @override
   Widget build(BuildContext context) {
-    return Wrap(
-      spacing: 2,
-      runSpacing: 2,
-      children: List.generate(_controllerMap.length,
-          (index) => _ncaaInputNode(_controllerMap.keys.toList()[index])),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('ncAA'),
+        Wrap(
+          spacing: 10,
+          runSpacing: 2,
+          children: List.generate(_controllerMap.length,
+                  (index) => _ncaaInputNode(_controllerMap.keys.toList()[index])),
+        ),
+      ],
     );
   }
 
