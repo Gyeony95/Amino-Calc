@@ -34,6 +34,9 @@ class _AminoMapSelectorState extends State<AminoMapSelector> {
     'R': true,
   };
 
+  // 버튼이 전체 선택 되었는지 체크
+  bool buttonAllCheck = true;
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -54,6 +57,7 @@ class _AminoMapSelectorState extends State<AminoMapSelector> {
                         widget.onChangeAminos(selectedAminos);
                       },
                     );
+                    _checkButtonAllSelected();
                   },
                 ),
                 Text(amino),
@@ -71,21 +75,44 @@ class _AminoMapSelectorState extends State<AminoMapSelector> {
       children: [
         const Text('Amino acid'),
         const SizedBox(width: 10),
-        ElevatedButton(onPressed: ()  => _buttonTap(true), child: const Text('All Check')),
+        ElevatedButton(onPressed: ()  => _buttonTap(), child: Text(buttonAllCheck ? 'All Uncheck' : 'All Check')),
         const SizedBox(width: 10),
-        ElevatedButton(onPressed: () => _buttonTap(false), child: const Text('All Uncheck')),
+        ElevatedButton(onPressed: _strepButtonTap, child: const Text('STREF')),
       ],
     );
   }
 
-  void _buttonTap(bool value) {
+
+  // 모든체크박스가 눌려있는지 체크하는 부분
+  void _checkButtonAllSelected(){
+    bool isAllTrue = true;
+    for(var key in selectedAminos.keys){
+      if(selectedAminos[key] == false){
+        isAllTrue = false;
+      }
+    }
+    buttonAllCheck = isAllTrue;
+    setState(() {});
+  }
+
+  // 전체 활성/비활성 버튼
+  void _buttonTap() {
     setState(
       () {
         for(var key in selectedAminos.keys){
-          selectedAminos[key] = value;
+          selectedAminos[key] = !buttonAllCheck;
         }
         widget.onChangeAminos(selectedAminos);
       },
     );
+    _checkButtonAllSelected();
+  }
+
+  void _strepButtonTap(){
+    List<String> strep = ['W','S','H','P','Q','F','E','K'];
+    for(var key in selectedAminos.keys){
+      selectedAminos[key] = strep.contains(key);
+    }
+    _checkButtonAllSelected();
   }
 }
