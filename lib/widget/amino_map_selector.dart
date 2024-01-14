@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 // ignore: must_be_immutable
 class AminoMapSelector extends StatefulWidget {
   Function(Map<String, bool> selectedAminos) onChangeAminos;
+
   AminoMapSelector({super.key, required this.onChangeAminos});
+
   @override
   _AminoMapSelectorState createState() => _AminoMapSelectorState();
 }
@@ -37,7 +39,7 @@ class _AminoMapSelectorState extends State<AminoMapSelector> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Amino acid'),
+        _titleRow(),
         Wrap(
           children: selectedAminos.keys.map((String amino) {
             return Row(
@@ -47,7 +49,7 @@ class _AminoMapSelectorState extends State<AminoMapSelector> {
                   value: selectedAminos[amino]!,
                   onChanged: (bool? value) {
                     setState(
-                          () {
+                      () {
                         selectedAminos[amino] = value!;
                         widget.onChangeAminos(selectedAminos);
                       },
@@ -61,6 +63,29 @@ class _AminoMapSelectorState extends State<AminoMapSelector> {
           }).toList(),
         ),
       ],
+    );
+  }
+
+  Widget _titleRow() {
+    return Row(
+      children: [
+        const Text('Amino acid'),
+        const SizedBox(width: 10),
+        ElevatedButton(onPressed: ()  => _buttonTap(true), child: const Text('All Check')),
+        const SizedBox(width: 10),
+        ElevatedButton(onPressed: () => _buttonTap(false), child: const Text('All Uncheck')),
+      ],
+    );
+  }
+
+  void _buttonTap(bool value) {
+    setState(
+      () {
+        for(var key in selectedAminos.keys){
+          selectedAminos[key] = value;
+        }
+        widget.onChangeAminos(selectedAminos);
+      },
     );
   }
 }
