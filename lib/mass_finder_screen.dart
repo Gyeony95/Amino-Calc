@@ -1,6 +1,6 @@
 import 'dart:isolate';
 
-import 'package:mass_finder/helper/mass_finder_helper_v2.dart';
+import 'package:mass_finder/helper/mass_finder_helper.dart';
 import 'package:mass_finder/util/alert_toast.dart';
 import 'package:mass_finder/model/amino_model.dart';
 import 'package:mass_finder/widget/amino_map_selector.dart';
