@@ -77,7 +77,7 @@ class _AminoMapSelectorState extends State<AminoMapSelector> {
         const SizedBox(width: 10),
         ElevatedButton(onPressed: ()  => _buttonTap(), child: Text(buttonAllCheck ? 'All Uncheck' : 'All Check')),
         const SizedBox(width: 10),
-        ElevatedButton(onPressed: _strepButtonTap, child: const Text('STREF')),
+        ElevatedButton(onPressed: _strepButtonTap, child: const Text('STREP')),
       ],
     );
   }

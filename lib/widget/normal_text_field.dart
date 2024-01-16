@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
+// inputFormatters: [FilteringTextInputFormatter.digitsOnly],
 // ignore: use_key_in_widget_constructors
 class NormalTextField extends StatefulWidget {
   final TextEditingController textController;

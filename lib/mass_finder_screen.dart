@@ -104,7 +104,6 @@ class _MassFinderScreenState extends State<MassFinderScreen> {
             NormalTextField(
               textController: targetWeight,
               labelText: 'Exact Mass', // 총 단백질의 무게
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               hintText: 'please enter exact mass(only digit)', // 숫자만 입력
             ),
             const SizedBox(height: 10),
