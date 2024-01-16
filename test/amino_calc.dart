@@ -20,14 +20,21 @@ final aminoMap = {
   'H': 155.07,
   'K': 146.11,
   'R': 174.11,
+  'B': 147.05,
 };
 
 void main(){
-  const String value = 'fDEHHIIKLMPPRRWY';
+  const String value = 'fWSHPQFEKB';
 
   var splitList = value.split('');
   double total = splitList.fold(0.0, (sum, e) => sum + (aminoMap[e] ?? 0));
-  double waterWeight = getWaterWeight(value.length);
+  bool hasFormy = splitList.first == 'f';
+  double waterWeight = 0;
+  if(hasFormy){
+    waterWeight = getWaterWeight(value.length -1);
+  }else{
+    waterWeight = getWaterWeight(value.length);
+  }
   print('total : $total, water : $waterWeight, result : ${total - waterWeight}');
 }
 

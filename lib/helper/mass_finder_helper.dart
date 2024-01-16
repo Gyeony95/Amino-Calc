@@ -218,14 +218,18 @@ double acceptanceProbability(
 }
 
 // 넘어온 code로 무게를 계산하고 포멜레이스 포함이면 그 무게까지 더해줌
+// 포멜레이스는 물 증발량 없음!!!
 double getWeightSum(String solutionCombine) {
   double result =
       solutionCombine.split('').fold(0.0, (sum, e) => sum + (dataMap[e] ?? 0));
   if (solutionCombine.startsWith('f')) {
+    // 물 증발량 제거
+    result = result - getWaterWeight(solutionCombine.length - 1); // 포밀레이스는 물증발 안하고 순수 무게 증가
     result += fWeight;
+  }else{
+    // 물 증발량 제거
+    result = result - getWaterWeight(solutionCombine.length);
   }
-  // 물 증발량 제거
-  result = result - getWaterWeight(solutionCombine.length);
   return result;
 }
 
