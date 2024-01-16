@@ -47,6 +47,8 @@ class _MassFinderScreenState extends State<MassFinderScreen> {
   double get _maxWidth => 500;
   double get _minWidth => 300;
 
+  late BuildContext screenContext;
+
   @override
   void initState() {
     super.initState();
@@ -55,6 +57,9 @@ class _MassFinderScreenState extends State<MassFinderScreen> {
         var mapList = message as List<Map<String, dynamic>>;
         var responseList = mapList.map((e) => AminoModel.fromJson(e)).toList();
         resultList.addAll(responseList);
+        if(resultList.isEmpty){
+          AlertToast.show(context: screenContext, msg: '결과값을 찾지 못했습니다.');
+        }
         isLoading = false;
       });
     });
@@ -66,6 +71,7 @@ class _MassFinderScreenState extends State<MassFinderScreen> {
 
   @override
   Widget build(BuildContext context) {
+    screenContext = context;
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
