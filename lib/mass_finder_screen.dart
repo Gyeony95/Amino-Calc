@@ -1,7 +1,7 @@
 import 'dart:isolate';
 
 import 'package:flutter/services.dart';
-import 'package:mass_finder/helper/mass_finder_helper.dart';
+import 'package:mass_finder/helper/logic_router/logic_helper.dart';
 import 'package:mass_finder/util/alert_toast.dart';
 import 'package:mass_finder/model/amino_model.dart';
 import 'package:mass_finder/widget/amino_map_selector.dart';
@@ -11,8 +11,6 @@ import 'package:mass_finder/widget/loading_overlay.dart';
 import 'package:mass_finder/widget/ncaa_input_area.dart';
 import 'package:mass_finder/widget/normal_text_field.dart';
 import 'package:flutter/material.dart';
-
-import 'widget/highlight_text.dart';
 
 class MassFinderScreen extends StatefulWidget {
   const MassFinderScreen({Key? key}) : super(key: key);
@@ -30,7 +28,6 @@ class _MassFinderScreenState extends State<MassFinderScreen> {
 
   List<AminoModel> resultList = [];
 
-  final _receivePort = ReceivePort();
   bool isLoading = false;
 
   static double? totalWeight;
@@ -45,19 +42,22 @@ class _MassFinderScreenState extends State<MassFinderScreen> {
   Map<String, double> ncaaMap = {};
 
   double get _maxWidth => 500;
+
   double get _minWidth => 300;
 
   late BuildContext screenContext;
 
+  final _logicHelper = LogicHelper().repository;
+
   @override
   void initState() {
     super.initState();
-    _receivePort.listen((message) {
+    _logicHelper.init((message) {
       setState(() {
         var mapList = message as List<Map<String, dynamic>>;
         var responseList = mapList.map((e) => AminoModel.fromJson(e)).toList();
         resultList.addAll(responseList);
-        if(resultList.isEmpty){
+        if (resultList.isEmpty) {
           AlertToast.show(context: screenContext, msg: '결과값을 찾지 못했습니다.');
         }
         isLoading = false;
@@ -154,10 +154,11 @@ class _MassFinderScreenState extends State<MassFinderScreen> {
             const SizedBox(height: 10),
             NcAAInputArea(
               initNcAA: ncaaMap,
-              onChangeNcAA: (_map){
-              _map.removeWhere((k, v) => v == 0.0);
-              ncaaMap = _map;
-            },),
+              onChangeNcAA: (_map) {
+                _map.removeWhere((k, v) => v == 0.0);
+                ncaaMap = _map;
+              },
+            ),
             const SizedBox(height: 10),
             ElevatedButton(
               onPressed: () => onTapCalc(context),
@@ -199,7 +200,8 @@ class _MassFinderScreenState extends State<MassFinderScreen> {
           // Text('물 증발량 : ${item.waterWeight}'),
           Text('Exact Mass : ${item.weight}'),
           // Text('Similarity : ${item.similarity}%'),
-          Text('Difference : ${((totalWeight ?? 0) - (item.weight ?? 0)).abs()}')
+          Text(
+              'Difference : ${((totalWeight ?? 0) - (item.weight ?? 0)).abs()}')
         ],
       ),
     );
@@ -207,15 +209,14 @@ class _MassFinderScreenState extends State<MassFinderScreen> {
 
   /// init값, ion값 등에 따라 텍스트를 만들어주는 위젯
   Widget seqStringBuilder(AminoModel item) {
-
     String code = '';
     String ncaa = '';
     item.code = (item.code ?? '').replaceFirst(item.essentialSeq ?? '', '');
     List<String> seqList = (item.code ?? '').split('');
-    for(var seq in seqList){
-      if(isNcAA(seq)){
+    for (var seq in seqList) {
+      if (isNcAA(seq)) {
         ncaa = '$ncaa$seq';
-      }else{
+      } else {
         code = '$code$seq';
       }
     }
@@ -224,8 +225,11 @@ class _MassFinderScreenState extends State<MassFinderScreen> {
         style: const TextStyle(color: Colors.black),
         children: [
           TextSpan(text: code),
-          TextSpan(text: item.essentialSeq ?? '', style: const TextStyle(color: Colors.blue)),
-          TextSpan(text: ncaa, style: const TextStyle(fontWeight: FontWeight.w600)),
+          TextSpan(
+              text: item.essentialSeq ?? '',
+              style: const TextStyle(color: Colors.blue)),
+          TextSpan(
+              text: ncaa, style: const TextStyle(fontWeight: FontWeight.w600)),
           TextSpan(text: ' + ${item.ionType?.text ?? ''}'),
         ],
       ),
@@ -265,14 +269,7 @@ class _MassFinderScreenState extends State<MassFinderScreen> {
     Map<String, double> ia = inputAminos;
     // ncaa 적용
     ia.addAll(ncaaMap);
-    try {
-      Isolate.spawn<SendPort>(
-        (sp) => MassFinderHelperV2.calcByIonType(sp, w, a, f, i, ia),
-        _receivePort.sendPort,
-      );
-    } catch (e) {
-      AlertToast.show(context: context, msg: 'error occurred!!');
-    }
+    _logicHelper.onTapCalc(w, a, f, i, ia, context);
   }
 
   // 계산 시작전 각종 조건을 체크하는 부분
@@ -301,7 +298,7 @@ class _MassFinderScreenState extends State<MassFinderScreen> {
 
     Map<String, double> ia = inputAminos;
     ia.addAll(ncaaMap);
-    if(ia.isEmpty){
+    if (ia.isEmpty) {
       msg = '사용 가능한 아미노산이 없습니다.';
     }
     return msg;
