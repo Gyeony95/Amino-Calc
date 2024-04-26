@@ -9,7 +9,7 @@ class _LogicApp extends _LogicRepository {
   }
 
   @override
-  void onTapCalc(
+  List<AminoModel>? onTapCalc(
     double totalWeight,
     String initAmino,
     String formyType,
@@ -30,5 +30,6 @@ class _LogicApp extends _LogicRepository {
     } catch (e) {
       AlertToast.show(context: context, msg: 'error occurred!!');
     }
+    return null;
   }
 }

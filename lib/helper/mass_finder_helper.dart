@@ -21,19 +21,16 @@ class MassFinderHelperV2 {
   static FormyType _formyType = FormyType.unknown;
   static IonType _ionType = IonType.unknown;
 
-  static calcByIonType(SendPort sendPort, double targetMass, String initAminos,
+  static List<Map<String, dynamic>>? calcByIonType(SendPort? sendPort, double targetMass, String initAminos,
       String fomyType, String ionType, Map<String, double> aminoMap) {
     _ionType = IonType.decode(ionType);
     List<AminoModel> bestSolutions = [];
     switch (_ionType) {
-      // case IonType.none: // 없으면 그냥 그대로 계산
-      //   bestSolutions =
-      //       calc(sendPort, targetMass, initAminos, fomyType, ionType, aminoMap);
       case IonType.unknown:
         // IonType을 모르면 unKnown을 제외함 모든타입을 계산해야함
         for(var i in IonType.values){
           if(i == IonType.unknown) continue;
-          bestSolutions.addAll(calc(sendPort, targetMass - i.weight, initAminos,
+          bestSolutions.addAll(calc(targetMass - i.weight, initAminos,
               fomyType, i.text, aminoMap));
         }
         // calc 함수에서는 targetMass 를 낮춰놔서 낮춘만큼 다시 더해줌
@@ -42,7 +39,7 @@ class MassFinderHelperV2 {
         bestSolutions = sortAmino(bestSolutions, targetMass);
         bestSolutions = bestSolutions.take(topSolutionsCount).toList();
       default: // H, Na, k 일때 총 무게에서만 제외해서 계산
-        bestSolutions = calc(sendPort, targetMass - _ionType.weight, initAminos,
+        bestSolutions = calc(targetMass - _ionType.weight, initAminos,
             fomyType, ionType, aminoMap);
         // calc 함수에서는 targetMass 를 낮춰놔서 낮춘만큼 다시 더해줌
         bestSolutions.map((e) => e.weight = e.weight! + e.ionType!.weight).toList();
@@ -51,11 +48,15 @@ class MassFinderHelperV2 {
     bestSolutions.map((e) => e.similarity = calculateSimilarity(targetMass, e.weight ?? 0)).toList();
     List<Map<String, dynamic>> returnList =
         bestSolutions.map((e) => e.toJson()).toList();
-    sendPort.send(returnList);
+    if(sendPort == null){
+      return returnList;
+    }else{
+      sendPort.send(returnList);
+      return null;
+    }
   }
 
   static List<AminoModel> calc(
-      SendPort sendPort,
       double targetMass,
       String initAminos,
       String fomyType,

@@ -1,6 +1,3 @@
-import 'dart:isolate';
-
-import 'package:flutter/services.dart';
 import 'package:mass_finder/helper/logic_router/logic_helper.dart';
 import 'package:mass_finder/util/alert_toast.dart';
 import 'package:mass_finder/model/amino_model.dart';
@@ -269,7 +266,12 @@ class _MassFinderScreenState extends State<MassFinderScreen> {
     Map<String, double> ia = inputAminos;
     // ncaa 적용
     ia.addAll(ncaaMap);
-    _logicHelper.onTapCalc(w, a, f, i, ia, context);
+    final result = _logicHelper.onTapCalc(w, a, f, i, ia, context);
+    if(result != null) {
+      resultList = result;
+      isLoading = false;
+      setState(() {});
+    }
   }
 
   // 계산 시작전 각종 조건을 체크하는 부분

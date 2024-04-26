@@ -3,7 +3,7 @@ part of 'logic_helper.dart';
 abstract class _LogicRepository {
   void init(Function(dynamic) callback);
 
-  void onTapCalc(
+  List<AminoModel>? onTapCalc(
     double totalWeight,
     String initAmino,
     String formyType,
