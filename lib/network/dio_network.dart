@@ -38,7 +38,6 @@ class DioNetwork {
         connectTimeout: const Duration(seconds: 60),
         receiveTimeout: const Duration(seconds: 60),
         headers: {
-          'account-type': 'master',
           'Accept': 'application/json',
         },
         contentType: ContentType.json.mimeType,
