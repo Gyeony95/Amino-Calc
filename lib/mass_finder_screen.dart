@@ -1,7 +1,5 @@
-import 'dart:isolate';
-
 import 'package:flutter/services.dart';
-import 'package:mass_finder/helper/mass_finder_helper.dart';
+import 'package:mass_finder/network/dio_connect.dart';
 import 'package:mass_finder/util/alert_toast.dart';
 import 'package:mass_finder/model/amino_model.dart';
 import 'package:mass_finder/widget/amino_map_selector.dart';
@@ -11,8 +9,6 @@ import 'package:mass_finder/widget/loading_overlay.dart';
 import 'package:mass_finder/widget/ncaa_input_area.dart';
 import 'package:mass_finder/widget/normal_text_field.dart';
 import 'package:flutter/material.dart';
-
-import 'widget/highlight_text.dart';
 
 class MassFinderScreen extends StatefulWidget {
   const MassFinderScreen({Key? key}) : super(key: key);
@@ -30,7 +26,6 @@ class _MassFinderScreenState extends State<MassFinderScreen> {
 
   List<AminoModel> resultList = [];
 
-  final _receivePort = ReceivePort();
   bool isLoading = false;
 
   static double? totalWeight;
@@ -52,17 +47,6 @@ class _MassFinderScreenState extends State<MassFinderScreen> {
   @override
   void initState() {
     super.initState();
-    _receivePort.listen((message) {
-      setState(() {
-        var mapList = message as List<Map<String, dynamic>>;
-        var responseList = mapList.map((e) => AminoModel.fromJson(e)).toList();
-        resultList.addAll(responseList);
-        if(resultList.isEmpty){
-          AlertToast.show(context: screenContext, msg: '결과값을 찾지 못했습니다.');
-        }
-        isLoading = false;
-      });
-    });
 
     targetWeight.addListener(() {
       totalWeight = _targetWeight;
@@ -266,12 +250,19 @@ class _MassFinderScreenState extends State<MassFinderScreen> {
     // ncaa 적용
     ia.addAll(ncaaMap);
     try {
-      Isolate.spawn<SendPort>(
-        (sp) => MassFinderHelperV2.calcByIonType(sp, w, a, f, i, ia),
-        _receivePort.sendPort,
-      );
+      final result = await DioConnect().calcMass(totalWeight: w, initAmino: a, currentFormyType: f, currentIonType: i, inputAminos: ia);
+      setState(() {
+        resultList.addAll(result ?? []);
+        if(resultList.isEmpty){
+          AlertToast.show(context: screenContext, msg: '결과값을 찾지 못했습니다.');
+        }
+        isLoading = false;
+      });
     } catch (e) {
+      // ignore: use_build_context_synchronously
       AlertToast.show(context: context, msg: 'error occurred!!');
+      isLoading = false;
+      setState(() {});
     }
   }
 
